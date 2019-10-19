@@ -85,8 +85,8 @@ class MyApp(QtWidgets.QWidget):
 
         for index in range(total_row):
             if a_row(index).checkState() == QtCore.Qt.Checked:
-                name = a_row(index).text()[:-4]
-                ext = a_row(index).text()[-3:]
+                name = a_row(index).text().split(".", 1)[0]
+                ext = a_row(index).text().split(".")[-1]
                 # add item(s) to the listview (part02) with the rename option(s)
                 if self.ui.name_LE.text():
                     name = self.ui.name_LE.text()
