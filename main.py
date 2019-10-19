@@ -115,7 +115,6 @@ class MyApp(QtWidgets.QWidget):
                 model.appendRow(item)
 
     def rename_mth(self):
-        print(self.path_memory_id)
         model = self.ui.listView.model()
         for row in range(self.ui.listWidget.count()):
             item = self.ui.listWidget.item(row)
@@ -124,8 +123,6 @@ class MyApp(QtWidgets.QWidget):
                 if memory_id in mem_id[2]:
                     path = mem_id[1].replace("/", "\\")
                     os.chdir(path)
-                    #print(f"{path}\\{model.item(row).text()}")
-                    #print(item.text())
                     os.rename(item.text(), model.item(row).text())
 
     def clear_mth(self):
