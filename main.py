@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QFileInfo
@@ -20,6 +21,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.addfile_btn.clicked.connect(self.btn_sender)
         self.ui.preview_btn.clicked.connect(self.btn_sender)
         self.ui.clear_btn.clicked.connect(self.clear_mth)
+        self.ui.rename_btn.clicked.connect(self.rename_mth)
 
     def btn_sender(self):
         sender_btn = self.sender().text()
@@ -27,7 +29,9 @@ class MyApp(QtWidgets.QWidget):
         if sender_btn == "Add File(s)":
             result = self.addfile_mth()
             if result:
-                self.path_memory_id = result.copy()
+                for name_lst in result:
+                    self.path_memory_id.append(name_lst)
+
                 self.preview_mth()
         elif sender_btn == "Add Folder":
             pass
@@ -68,7 +72,6 @@ class MyApp(QtWidgets.QWidget):
             return False
 
     def preview_mth(self):
-        print(self.path_memory_id)
         # add item(s) to the listview (part01)
         model = QtGui.QStandardItemModel()
         self.ui.listView.setModel(model)
@@ -110,6 +113,20 @@ class MyApp(QtWidgets.QWidget):
                 item = QtGui.QStandardItem(a_row(index).text())
                 # i need to just color the text to gray
                 model.appendRow(item)
+
+    def rename_mth(self):
+        print(self.path_memory_id)
+        model = self.ui.listView.model()
+        for row in range(self.ui.listWidget.count()):
+            item = self.ui.listWidget.item(row)
+            memory_id = str(item).split(" ")[-1][:-1]
+            for mem_id in self.path_memory_id:
+                if memory_id in mem_id[2]:
+                    path = mem_id[1].replace("/", "\\")
+                    os.chdir(path)
+                    #print(f"{path}\\{model.item(row).text()}")
+                    #print(item.text())
+                    os.rename(item.text(), model.item(row).text())
 
     def clear_mth(self):
         # clear all the item(s) in listwidget
