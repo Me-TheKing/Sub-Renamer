@@ -82,19 +82,21 @@ class MyApp(QtWidgets.QWidget):
 
         for index in range(total_row):
             if a_row(index).checkState() == QtCore.Qt.Checked:
-                name_ext = a_row(index).text().split(".")
-
+                #name_ext = a_row(index).text().split(".")
+                name = a_row(index).text()[:-4]
+                ext = a_row(index).text()[-3:]
+                print(name, ext)
                 if self.ui.name_LE.text():
-                    name_ext[0] = self.ui.name_LE.text()
+                    name = self.ui.name_LE.text()
                 if self.ui.ext_LE.text():
-                    name_ext[1] = self.ui.ext_LE.text()
+                    ext = self.ui.ext_LE.text()
 
                 # add item(s) to the listview (part02) with the rename option(s)
                 if self.ui.serial_LE.text():
-                    item = QtGui.QStandardItem(f"{name_ext[0]} {str(serial).zfill(len(self.ui.serial_LE.text()))}.{name_ext[1]}")
+                    item = QtGui.QStandardItem(f"{name} {str(serial).zfill(len(self.ui.serial_LE.text()))}.{ext}")
                     serial += 1
                 else:
-                    item = QtGui.QStandardItem(f"{name_ext[0]}.{name_ext[1]}")
+                    item = QtGui.QStandardItem(f"{name}.{ext}")
 
                 model.appendRow(item)
             else:
