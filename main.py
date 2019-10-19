@@ -82,22 +82,28 @@ class MyApp(QtWidgets.QWidget):
 
         for index in range(total_row):
             if a_row(index).checkState() == QtCore.Qt.Checked:
-                #name_ext = a_row(index).text().split(".")
                 name = a_row(index).text()[:-4]
                 ext = a_row(index).text()[-3:]
-                print(name, ext)
+                # add item(s) to the listview (part02) with the rename option(s)
                 if self.ui.name_LE.text():
                     name = self.ui.name_LE.text()
                 if self.ui.ext_LE.text():
                     ext = self.ui.ext_LE.text()
-
-                # add item(s) to the listview (part02) with the rename option(s)
                 if self.ui.serial_LE.text():
-                    item = QtGui.QStandardItem(f"{name} {str(serial).zfill(len(self.ui.serial_LE.text()))}.{ext}")
+                    name = f"{name} {str(serial).zfill(len(self.ui.serial_LE.text()))}"
                     serial += 1
-                else:
-                    item = QtGui.QStandardItem(f"{name}.{ext}")
 
+                # the Sub file options
+                if self.ui.lang_cobox.currentText():
+                    name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}.{self.ui.delay_LE.text()}.{self.ui.lang_cobox.currentText()}"
+                elif self.ui.delay_LE.text():
+                    name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}.{self.ui.delay_LE.text()}"
+                elif self.ui.fansub_LE.text():
+                    name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}"
+                elif self.ui.order_LE.text():
+                    name = f"{name}.{self.ui.order_LE.text()}"
+                # final step to add the name to the listview
+                item = QtGui.QStandardItem(f"{name}.{ext}")
                 model.appendRow(item)
             else:
                 # add item(s) to the listview (part02) don't rename
@@ -112,6 +118,8 @@ class MyApp(QtWidgets.QWidget):
         model = QtGui.QStandardItemModel()
         self.ui.listView.setModel(model)
         model.removeRows(0, model.rowCount())
+        # clear the self.path_memory_id
+        self.path_memory_id = []
 
     # def moveUP(self):
     #     currentRow = self.ui.listWidget.currentRow()
