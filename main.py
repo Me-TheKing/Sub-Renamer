@@ -2,7 +2,7 @@ import sys
 import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import QFileInfo
+from PyQt5.QtCore import QFileInfo, Qt
 from UI.maingui import Ui_Form  # importing our generated file
 
 
@@ -120,6 +120,7 @@ class MyApp(QtWidgets.QWidget):
             else:
                 # add item(s) to the listview (part02) don't rename
                 item = QtGui.QStandardItem(a_row(index).text())
+                item.setForeground(Qt.red)
                 # i need to just color the text to gray
                 model.appendRow(item)
 
