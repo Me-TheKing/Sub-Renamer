@@ -22,6 +22,15 @@ class MyApp(QtWidgets.QWidget):
         self.ui.preview_btn.clicked.connect(self.btn_sender)
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
+        self.ui.name_LE.textChanged.connect(self.preview_mth)
+        self.ui.serial_LE.textChanged.connect(self.preview_mth)
+        self.ui.ext_LE.textChanged.connect(self.preview_mth)
+        self.ui.order_LE.textChanged.connect(self.preview_mth)
+        self.ui.fansub_LE.textChanged.connect(self.preview_mth)
+        self.ui.delay_LE.textChanged.connect(self.preview_mth)
+        self.ui.lang_cobox.currentIndexChanged.connect(self.preview_mth)
+        self.ui.listWidget.itemChanged.connect(self.preview_mth)
+        self.ui.listWidget.model().rowsMoved.connect(self.preview_mth)
 
     def btn_sender(self):
         sender_btn = self.sender().text()
@@ -85,7 +94,7 @@ class MyApp(QtWidgets.QWidget):
 
         for index in range(total_row):
             if a_row(index).checkState() == QtCore.Qt.Checked:
-                name = a_row(index).text().split(".", 1)[0]
+                name = ".".join(a_row(index).text().rsplit(".")[:-1])
                 ext = a_row(index).text().split(".")[-1]
                 # add item(s) to the listview (part02) with the rename option(s)
                 if self.ui.name_LE.text():
