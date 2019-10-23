@@ -17,18 +17,16 @@ class MyApp(QtWidgets.QWidget):
         # call the all the method(s)
         self.hide_unhide_col()
         self.btn_handler()
-        # set my var
-        self.path_memory_id =[]
         # setup table widget and Column(s)
         self.ui.tableWidget.setSortingEnabled(True)
         self.ui.tableWidget.setColumnCount(4)
         self.ui.tableWidget.setHorizontalHeaderLabels(["Name", "Date", "Type", "Full Name"])
-        #self.ui.tableWidget.horizontalHeader().setVisible(False)
         self.ui.tableWidget.setColumnHidden(1, True)
         self.ui.tableWidget.setColumnHidden(2, True)
+        self.ui.tableWidget.setColumnHidden(3, True)
 
     def btn_handler(self):
-        self.ui.addfile_btn.clicked.connect(self.btn_sender)
+        self.ui.addfile_btn.clicked.connect(self.addfile_mth)
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         self.ui.name_LE.textChanged.connect(self.preview_mth)
@@ -40,30 +38,13 @@ class MyApp(QtWidgets.QWidget):
         self.ui.lang_cobox.currentIndexChanged.connect(self.preview_mth)
         self.ui.date_chbox.clicked.connect(self.hide_unhide_col)
         self.ui.type_chbox.clicked.connect(self.hide_unhide_col)
-        #self.ui.listWidget.itemChanged.connect(self.preview_mth)
-        #self.ui.listWidget.model().rowsMoved.connect(self.preview_mth)
-
-    def btn_sender(self):
-        sender_btn = self.sender().text()
-
-        if sender_btn == "Add File(s)":
-            result = self.addfile_mth()
-            if result:
-                for name_lst in result:
-                    self.path_memory_id.append(name_lst)
-
-                self.preview_mth()
-        elif sender_btn == "Add Folder":
-            pass
-        elif sender_btn == "Preview":
-            self.preview_mth()
 
     def addfile_mth(self):
         # QFileDialog.getOpenFileName(self, [Title], [Directory], "[some filters]")
         # leave the dirctory blank to start the app from the running folder
         fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
                                                     "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
-        path_memoryid = []
+
         duplicate = False
         if fileNames:
             for name in fileNames:
@@ -78,14 +59,7 @@ class MyApp(QtWidgets.QWidget):
                 if not duplicate:
                     modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
                     fileName = QFileInfo(name).fileName()
-                    #path = QFileInfo(name).path()
-                    type = QFileInfo(name).suffix()
-                    # add item(s) to listwidget
-                    # item = QtWidgets.QListWidgetItem()
-                    # item.setText(fileName)
-                    # item.setCheckState(QtCore.Qt.Checked)
-                    # self.ui.listWidget.addItem(item)
-                    ###################################
+                    ext_type = QFileInfo(name).suffix()
                     # setup table widget Row(s)
                     row_position = self.ui.tableWidget.rowCount()
                     self.ui.tableWidget.insertRow(row_position)
@@ -93,7 +67,7 @@ class MyApp(QtWidgets.QWidget):
                     # add item(s) to the table
                     self.ui.tableWidget.setItem(row_position, 0, QTableWidgetItem(fileName))
                     self.ui.tableWidget.setItem(row_position, 1, QTableWidgetItem(modificationTime))
-                    self.ui.tableWidget.setItem(row_position, 2, QTableWidgetItem(type))
+                    self.ui.tableWidget.setItem(row_position, 2, QTableWidgetItem(ext_type))
                     self.ui.tableWidget.setItem(row_position, 3, QTableWidgetItem(name))
                     # set some option(s) to the item
                     for a_row in range(row_position + 1):
@@ -105,14 +79,6 @@ class MyApp(QtWidgets.QWidget):
 
                     self.ui.tableWidget.resizeColumnsToContents()
                     self.ui.tableWidget.resizeRowsToContents()
-                    # add the path and it's memory ID location in a list
-                    # memory_id = str(item).split(" ")[-1][:-1]
-                    # path_memoryid.append([name, path, memory_id])
-
-        if path_memoryid:
-            return path_memoryid
-        else:
-            return False
 
     def preview_mth(self):
         pass
