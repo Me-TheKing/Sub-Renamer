@@ -21,8 +21,8 @@ class MyApp(QtWidgets.QWidget):
         self.path_memory_id =[]
         # setup table widget and Column(s)
         self.ui.tableWidget.setSortingEnabled(True)
-        self.ui.tableWidget.setColumnCount(3)
-        self.ui.tableWidget.setHorizontalHeaderLabels(["Name", "Date", "Type"])
+        self.ui.tableWidget.setColumnCount(4)
+        self.ui.tableWidget.setHorizontalHeaderLabels(["Name", "Date", "Type", "Full Name"])
         #self.ui.tableWidget.horizontalHeader().setVisible(False)
         self.ui.tableWidget.setColumnHidden(1, True)
         self.ui.tableWidget.setColumnHidden(2, True)
@@ -68,9 +68,9 @@ class MyApp(QtWidgets.QWidget):
         if fileNames:
             for name in fileNames:
                 # check if the file has added before or not
-                if len(self.path_memory_id):
-                    for old_name, _, _ in self.path_memory_id:
-                        if name == old_name:
+                if self.ui.tableWidget.rowCount():
+                    for row in range(self.ui.tableWidget.rowCount()):
+                        if name == self.ui.tableWidget.item(row, 3).text():
                             duplicate = True
                             print("you olready have this file in your list")
                             break
@@ -78,7 +78,7 @@ class MyApp(QtWidgets.QWidget):
                 if not duplicate:
                     modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
                     fileName = QFileInfo(name).fileName()
-                    path = QFileInfo(name).path()
+                    #path = QFileInfo(name).path()
                     type = QFileInfo(name).suffix()
                     # add item(s) to listwidget
                     # item = QtWidgets.QListWidgetItem()
@@ -94,14 +94,14 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.tableWidget.setItem(row_position, 0, QTableWidgetItem(fileName))
                     self.ui.tableWidget.setItem(row_position, 1, QTableWidgetItem(modificationTime))
                     self.ui.tableWidget.setItem(row_position, 2, QTableWidgetItem(type))
+                    self.ui.tableWidget.setItem(row_position, 3, QTableWidgetItem(name))
                     # set some option(s) to the item
                     for a_row in range(row_position + 1):
-                        print("row", a_row)
                         for a_col in range(self.ui.tableWidget.columnCount()):
-                            if a_col == 0 :
+                            if a_col == 0:
                                 self.ui.tableWidget.item(a_row, a_col).setCheckState(Qt.Checked)
 
-                            self.ui.tableWidget.item(a_row, a_col).setFlags(Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled |Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                            self.ui.tableWidget.item(a_row, a_col).setFlags(Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 
                     self.ui.tableWidget.resizeColumnsToContents()
                     self.ui.tableWidget.resizeRowsToContents()
