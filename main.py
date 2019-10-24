@@ -140,14 +140,24 @@ class MyApp(QtWidgets.QWidget):
                     os.rename(item.text(), model.item(row).text())
 
     def clear_mth(self):
-        # clear all the item(s) in listwidget
-        self.ui.listWidget.clear()
+        # clear all the item(s) in tablewidget
+        rows = self.ui.tableWidget.rowCount()
+        for index in reversed(range(rows)):
+            self.ui.tableWidget.removeRow(index)
+
         # clear all the item(s) in listview
         model = QtGui.QStandardItemModel()
         self.ui.listView.setModel(model)
         model.removeRows(0, model.rowCount())
-        # clear the self.path_memory_id
-        self.path_memory_id = []
+
+        # clear all the user input(s)
+        self.ui.name_LE.clear()
+        self.ui.serial_LE.clear()
+        self.ui.ext_LE.clear()
+        self.ui.order_LE.clear()
+        self.ui.fansub_LE.clear()
+        self.ui.delay_LE.clear()
+        self.ui.lang_cobox.setCurrentIndex(0)
 
     def hide_unhide_col (self):
 
