@@ -40,6 +40,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
+        # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
         self.ui.ext_LE.textChanged.connect(self.preview_mth)
@@ -47,9 +48,14 @@ class MyApp(QtWidgets.QWidget):
         self.ui.fansub_LE.textChanged.connect(self.preview_mth)
         self.ui.delay_LE.textChanged.connect(self.preview_mth)
         self.ui.lang_cobox.currentIndexChanged.connect(self.preview_mth)
+        # hide or unhide the Date and Type column
         self.ui.date_chbox.clicked.connect(self.hide_unhide_col)
         self.ui.type_chbox.clicked.connect(self.hide_unhide_col)
+        # call the preview_mth if the raw(s) order change
         self.ui.tableWidget.itemChanged.connect(self.preview_mth)
+        # add a custom ContextMenu to the qTableWidget
+        self.ui.tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.ui.tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
 
     def addfile_mth(self):
         # QFileDialog.getOpenFileName(self, [Title], [Directory], "[some filters]")
@@ -215,6 +221,39 @@ class MyApp(QtWidgets.QWidget):
             self.ui.tableWidget.resizeColumnsToContents()
         else:
             self.ui.tableWidget.hideColumn(2)
+
+    def on_customContextMenuRequested(self, pos):
+        # if there is no table return and don't show the contextMenu
+        it = self.ui.tableWidget.itemAt(pos)
+        if it is None: return
+
+        # creat the contextMenu and add the action the popup the menu in the position of the mouse
+        menu = QtWidgets.QMenu()
+        delete_selected_action = menu.addAction("Delete Selected Name(s)")
+        delete_unselected_action = menu.addAction("Delete unSelected Name(s)")
+        action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+
+        # delete the row(s)
+        total_rows = self.ui.tableWidget.rowCount()
+        row = self.ui.tableWidget
+        cell = self.ui.tableWidget.item
+
+        if action == delete_selected_action:
+            for index in reversed(range(total_rows)):
+                if cell(index, 0).checkState() == QtCore.Qt.Checked:
+                    row.removeRow(index)
+
+        if action == delete_unselected_action:
+            for index in reversed(range(total_rows)):
+                if cell(index, 0).checkState() != QtCore.Qt.Checked:
+                    row.removeRow(index)
+
+        # update the listview after the delete
+        self.preview_mth()
+
+        # disable the clear_btn if there is no rows
+        if self.ui.tableWidget.rowCount() == 0:
+            self.ui.clear_btn.setEnabled(False)
 
     # def moveUP(self):
     #     currentRow = self.ui.listWidget.currentRow()
