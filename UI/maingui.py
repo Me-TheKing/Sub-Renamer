@@ -124,6 +124,7 @@ class Ui_Form(object):
         self.horizontalLayout_3.addWidget(self.type_chbox)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.tableWidget = TableWidgetDragRows(Form)
+        self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)

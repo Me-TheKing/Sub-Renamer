@@ -112,7 +112,6 @@ class MyApp(QtWidgets.QWidget):
         if self.ui.serial_LE.text():
             serial = int(self.ui.serial_LE.text())
 
-        unchecked_name = 0
         for index in range(total_row):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
                 # I can use the QFileInfo but I will leave it as alternative way
@@ -147,12 +146,15 @@ class MyApp(QtWidgets.QWidget):
 
         # disable the rename & Unrename btn if there is no row is checked
         for i in range(total_row):
-            print(model.item(i).text())
             if a_row(i, 0).text() != model.item(i).text():
                 self.ui.rename_btn.setEnabled(True)
                 break
             else:
                 self.ui.rename_btn.setEnabled(False)
+
+        # to make sur the row(s) and column(s) size same as the contents
+        self.ui.tableWidget.resizeColumnsToContents()
+        self.ui.tableWidget.resizeRowsToContents()
 
     def rename_mth(self):
         model = self.ui.listView.model()
