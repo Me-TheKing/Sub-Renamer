@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QFileInfo, Qt
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem
 
@@ -38,6 +38,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.lang_cobox.currentIndexChanged.connect(self.preview_mth)
         self.ui.date_chbox.clicked.connect(self.hide_unhide_col)
         self.ui.type_chbox.clicked.connect(self.hide_unhide_col)
+        self.ui.tableWidget.itemChanged.connect(self.preview_mth)
 
     def addfile_mth(self):
         # QFileDialog.getOpenFileName(self, [Title], [Directory], "[some filters]")
@@ -81,48 +82,51 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.tableWidget.resizeRowsToContents()
 
     def preview_mth(self):
-        pass
+        # the information  I need is the Total row(s) and the name of the file
+        total_row = self.ui.tableWidget.rowCount()
+        a_row = self.ui.tableWidget.item
+
+        ################################################
+        # the main adding to the listview is from here #
+        ################################################
         # add item(s) to the listview (part01)
-        # model = QtGui.QStandardItemModel()
-        # self.ui.listView.setModel(model)
-        #
-        # total_row = self.ui.listWidget.count()
-        # a_row = self.ui.listWidget.item
-        #
-        # # some out of the loop option(s)
-        # if self.ui.serial_LE.text():
-        #     serial = int(self.ui.serial_LE.text())
-        #
-        # for index in range(total_row):
-        #     if a_row(index).checkState() == QtCore.Qt.Checked:
-        #         name = ".".join(a_row(index).text().rsplit(".")[:-1])
-        #         ext = a_row(index).text().split(".")[-1]
-        #         # add item(s) to the listview (part02) with the rename option(s)
-        #         if self.ui.name_LE.text():
-        #             name = self.ui.name_LE.text()
-        #         if self.ui.ext_LE.text():
-        #             ext = self.ui.ext_LE.text()
-        #         if self.ui.serial_LE.text():
-        #             name = f"{name} {str(serial).zfill(len(self.ui.serial_LE.text()))}"
-        #             serial += 1
-        #
-        #         # the Sub file options
-        #         if self.ui.lang_cobox.currentText():
-        #             name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}.{self.ui.delay_LE.text()}.{self.ui.lang_cobox.currentText()}"
-        #         elif self.ui.delay_LE.text():
-        #             name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}.{self.ui.delay_LE.text()}"
-        #         elif self.ui.fansub_LE.text():
-        #             name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}"
-        #         elif self.ui.order_LE.text():
-        #             name = f"{name}.{self.ui.order_LE.text()}"
-        #         # final step to add the name to the listview
-        #         item = QtGui.QStandardItem(f"{name}.{ext}")
-        #         model.appendRow(item)
-        #     else:
-        #         # add item(s) to the listview (part02) don't rename
-        #         item = QtGui.QStandardItem(a_row(index).text())
-        #         item.setForeground(Qt.red)
-        #         model.appendRow(item)
+        model = QtGui.QStandardItemModel()
+        self.ui.listView.setModel(model)
+
+        # some out of the loop option(s)
+        if self.ui.serial_LE.text():
+            serial = int(self.ui.serial_LE.text())
+
+        for index in range(total_row):
+            if a_row(index, 0).checkState() == QtCore.Qt.Checked:
+                name = ".".join(a_row(index, 0).text().rsplit(".")[:-1])
+                ext = a_row(index, 0).text().split(".")[-1]
+                # add item(s) to the listview (part02) with the rename option(s)
+                if self.ui.name_LE.text():
+                    name = self.ui.name_LE.text()
+                if self.ui.ext_LE.text():
+                    ext = self.ui.ext_LE.text()
+                if self.ui.serial_LE.text():
+                    name = f"{name} {str(serial).zfill(len(self.ui.serial_LE.text()))}"
+                    serial += 1
+
+                # the Sub file options
+                if self.ui.lang_cobox.currentText():
+                    name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}.{self.ui.delay_LE.text()}.{self.ui.lang_cobox.currentText()}"
+                elif self.ui.delay_LE.text():
+                    name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}.{self.ui.delay_LE.text()}"
+                elif self.ui.fansub_LE.text():
+                    name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}"
+                elif self.ui.order_LE.text():
+                    name = f"{name}.{self.ui.order_LE.text()}"
+                # final step to add the name to the listview
+                item = QtGui.QStandardItem(f"{name}.{ext}")
+                model.appendRow(item)
+            else:
+                # add item(s) to the listview (part02) don't rename
+                item = QtGui.QStandardItem(a_row(index, 0).text())
+                item.setForeground(Qt.red)
+                model.appendRow(item)
 
     def rename_mth(self):
         model = self.ui.listView.model()
