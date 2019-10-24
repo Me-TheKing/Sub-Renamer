@@ -95,14 +95,6 @@ class MyApp(QtWidgets.QWidget):
         total_row = self.ui.tableWidget.rowCount()
         a_row = self.ui.tableWidget.item
 
-        # to enable the rename btn
-        if len(self.ui.name_LE.text()) + len(self.ui.serial_LE.text()) + len(self.ui.ext_LE.text()) + len(
-                self.ui.order_LE.text()) + len(self.ui.fansub_LE.text()) + len(self.ui.delay_LE.text()) + len(
-                self.ui.lang_cobox.currentText()) >= 1:
-            self.ui.rename_btn.setEnabled(True)
-        else:
-            self.ui.rename_btn.setEnabled(False)
-
         ################################################
         # the main adding to the listview is from here #
         ################################################
@@ -146,11 +138,15 @@ class MyApp(QtWidgets.QWidget):
                 item = QtGui.QStandardItem(a_row(index, 0).text())
                 item.setForeground(Qt.red)
                 model.appendRow(item)
-                unchecked_name += 1
-                print(unchecked_name)
-                if unchecked_name == total_row:
-                    self.ui.rename_btn.setEnabled(False)
-                    self.ui.unrename_btn.setEnabled(False)
+
+        # disable the rename & Unrename btn if there is no row is checked
+        for i in range(total_row):
+            print(model.item(i).text())
+            if a_row(i, 0).text() != model.item(i).text():
+                self.ui.rename_btn.setEnabled(True)
+                break
+            else:
+                self.ui.rename_btn.setEnabled(False)
 
     def rename_mth(self):
         model = self.ui.listView.model()
