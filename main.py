@@ -3,6 +3,7 @@ import sys
 import time
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QFileInfo, Qt
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem
 
 from UI.maingui import Ui_Form  # importing our generated file
@@ -14,6 +15,11 @@ class MyApp(QtWidgets.QWidget):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        # set serial_LE, Order_LE, and delay_LE to eccept only Integer numbers
+        onlyInt = QIntValidator()
+        self.ui.serial_LE.setValidator(onlyInt)
+        self.ui.order_LE.setValidator(onlyInt)
+        self.ui.delay_LE.setValidator(onlyInt)
         # call the all the method(s)
         self.hide_unhide_col()
         self.btn_handler()
