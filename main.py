@@ -24,6 +24,11 @@ class MyApp(QtWidgets.QWidget):
         self.ui.tableWidget.setColumnHidden(1, True)
         self.ui.tableWidget.setColumnHidden(2, True)
         self.ui.tableWidget.setColumnHidden(3, True)
+        # set btn stats
+        self.ui.addpreset_btn.setEnabled(False)
+        self.ui.rename_btn.setEnabled(False)
+        self.ui.unrename_btn.setEnabled(False)
+        self.ui.clear_btn.setEnabled(False)
 
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
@@ -48,6 +53,9 @@ class MyApp(QtWidgets.QWidget):
 
         duplicate = False
         if fileNames:
+            # enable the clear_btn
+            self.ui.clear_btn.setEnabled(True)
+
             for name in fileNames:
                 # check if the file has added before or not
                 if self.ui.tableWidget.rowCount():
@@ -76,7 +84,8 @@ class MyApp(QtWidgets.QWidget):
                             if a_col == 0:
                                 self.ui.tableWidget.item(a_row, a_col).setCheckState(Qt.Checked)
 
-                            self.ui.tableWidget.item(a_row, a_col).setFlags(Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                            self.ui.tableWidget.item(a_row, a_col).setFlags(
+                                Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 
                     self.ui.tableWidget.resizeColumnsToContents()
                     self.ui.tableWidget.resizeRowsToContents()
@@ -85,6 +94,14 @@ class MyApp(QtWidgets.QWidget):
         # the information  I need is the Total row(s) and the name of the file
         total_row = self.ui.tableWidget.rowCount()
         a_row = self.ui.tableWidget.item
+
+        # to enable the rename btn
+        if len(self.ui.name_LE.text()) + len(self.ui.serial_LE.text()) + len(self.ui.ext_LE.text()) + len(
+                self.ui.order_LE.text()) + len(self.ui.fansub_LE.text()) + len(self.ui.delay_LE.text()) + len(
+                self.ui.lang_cobox.currentText()) >= 1:
+            self.ui.rename_btn.setEnabled(True)
+        else:
+            self.ui.rename_btn.setEnabled(False)
 
         ################################################
         # the main adding to the listview is from here #
@@ -97,8 +114,10 @@ class MyApp(QtWidgets.QWidget):
         if self.ui.serial_LE.text():
             serial = int(self.ui.serial_LE.text())
 
+        unchecked_name = 0
         for index in range(total_row):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
+                # I can use the QFileInfo but I will leave it as alternative way
                 name = ".".join(a_row(index, 0).text().rsplit(".")[:-1])
                 ext = a_row(index, 0).text().split(".")[-1]
                 # add item(s) to the listview (part02) with the rename option(s)
@@ -127,17 +146,34 @@ class MyApp(QtWidgets.QWidget):
                 item = QtGui.QStandardItem(a_row(index, 0).text())
                 item.setForeground(Qt.red)
                 model.appendRow(item)
+                unchecked_name += 1
+                print(unchecked_name)
+                if unchecked_name == total_row:
+                    self.ui.rename_btn.setEnabled(False)
+                    self.ui.unrename_btn.setEnabled(False)
 
     def rename_mth(self):
         model = self.ui.listView.model()
-        for row in range(self.ui.listWidget.count()):
-            item = self.ui.listWidget.item(row)
-            memory_id = str(item).split(" ")[-1][:-1]
-            for mem_id in self.path_memory_id:
-                if memory_id in mem_id[2]:
-                    path = mem_id[1].replace("/", "\\")
-                    os.chdir(path)
-                    os.rename(item.text(), model.item(row).text())
+        total_rows = self.ui.tableWidget.rowCount()
+        a_row = self.ui.tableWidget.item
+
+        for index in range(total_rows):
+            if a_row(index, 0).checkState() == QtCore.Qt.Checked:
+                # 0 is the Name column
+                original_name = self.ui.tableWidget.item(index, 0).text()
+                new_name = model.item(index).text()
+                # num 3 is the full name column that have the full pathname
+                full_name = self.ui.tableWidget.item(index, 3).text()
+                path = QFileInfo(full_name).path().replace("/", "\\")
+                # chang to the path dir and then rename
+                os.chdir(path)
+                os.rename(original_name, new_name)
+
+                # to disable the rename_btn and then enable the unrename_btn
+                self.ui.rename_btn.setEnabled(False)
+                self.ui.unrename_btn.setEnabled(True)
+            else:
+                print("I have to disable the Rename btn !!!!!????")
 
     def clear_mth(self):
         # clear all the item(s) in tablewidget
@@ -159,7 +195,10 @@ class MyApp(QtWidgets.QWidget):
         self.ui.delay_LE.clear()
         self.ui.lang_cobox.setCurrentIndex(0)
 
-    def hide_unhide_col (self):
+        # disable the clear_btn
+        self.ui.clear_btn.setEnabled(False)
+
+    def hide_unhide_col(self):
 
         if self.ui.date_chbox.isChecked():
             self.ui.tableWidget.setColumnHidden(1, False)
@@ -172,7 +211,6 @@ class MyApp(QtWidgets.QWidget):
             self.ui.tableWidget.resizeColumnsToContents()
         else:
             self.ui.tableWidget.hideColumn(2)
-
 
     # def moveUP(self):
     #     currentRow = self.ui.listWidget.currentRow()
