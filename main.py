@@ -2,7 +2,7 @@ import os
 import sys
 import time
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QFileInfo, Qt
+from PyQt5.QtCore import QFileInfo, Qt, QVariant
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem
 
@@ -24,12 +24,14 @@ class MyApp(QtWidgets.QWidget):
         self.hide_unhide_col()
         self.btn_handler()
         # setup table widget and Column(s)
-        self.ui.tableWidget.setSortingEnabled(True)
+        # self.ui.tableWidget.setSortingEnabled(True)
         self.ui.tableWidget.setColumnCount(4)
         self.ui.tableWidget.setHorizontalHeaderLabels(["Name", "Date", "Type", "Full Name"])
         self.ui.tableWidget.setColumnHidden(1, True)
         self.ui.tableWidget.setColumnHidden(2, True)
         self.ui.tableWidget.setColumnHidden(3, True)
+        # self.ui.tableWidget.horizontalHeader().setSortIndicatorShown(True)
+
         # set btn stats
         self.ui.addpreset_btn.setEnabled(False)
         self.ui.rename_btn.setEnabled(False)
@@ -52,10 +54,13 @@ class MyApp(QtWidgets.QWidget):
         self.ui.date_chbox.clicked.connect(self.hide_unhide_col)
         self.ui.type_chbox.clicked.connect(self.hide_unhide_col)
         # call the preview_mth if the raw(s) order change
-        self.ui.tableWidget.itemChanged.connect(self.preview_mth)
+        self.ui.tableWidget.itemChanged.connect(self.reset_sort)
         # add a custom ContextMenu to the qTableWidget
         self.ui.tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.ui.tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
+        # call the sort column if the user click the column header
+        # self.ui.tableWidget.horizontalHeader().sectionClicked.connect(self.sort_col)
+        self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
     def addfile_mth(self):
         # QFileDialog.getOpenFileName(self, [Title], [Directory], "[some filters]")
@@ -221,6 +226,19 @@ class MyApp(QtWidgets.QWidget):
             self.ui.tableWidget.resizeColumnsToContents()
         else:
             self.ui.tableWidget.hideColumn(2)
+
+    def sort_col(self, logical_index, sort_order):
+        self.ui.tableWidget.setSortingEnabled(True)
+        print("col index: ", logical_index, "sort : ", sort_order)
+        self.ui.tableWidget.setSortingEnabled(False)
+        self.ui.tableWidget.horizontalHeader().setSortIndicatorShown(True)
+        self.preview_mth()
+
+    def reset_sort(self):
+        # to remove the sor Indecator arrow if i manually order the rows
+        self.ui.tableWidget.horizontalHeader().setSortIndicatorShown(False)
+
+        self.preview_mth()
 
     def on_customContextMenuRequested(self, pos):
         # if there is no table return and don't show the contextMenu
