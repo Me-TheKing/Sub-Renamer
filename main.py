@@ -2,9 +2,9 @@ import os
 import sys
 import time
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QFileInfo, Qt, QVariant
+from PyQt5.QtCore import QFileInfo, Qt
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QAbstractItemView
 
 from UI.maingui import Ui_Form  # importing our generated file
 
@@ -15,22 +15,23 @@ class MyApp(QtWidgets.QWidget):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+
         # set serial_LE, Order_LE, and delay_LE to eccept only Integer numbers
         onlyInt = QIntValidator()
         self.ui.serial_LE.setValidator(onlyInt)
         self.ui.order_LE.setValidator(onlyInt)
         self.ui.delay_LE.setValidator(onlyInt)
+
         # call the all the method(s)
         self.hide_unhide_col()
         self.btn_handler()
+
         # setup table widget and Column(s)
-        # self.ui.tableWidget.setSortingEnabled(True)
         self.ui.tableWidget.setColumnCount(4)
         self.ui.tableWidget.setHorizontalHeaderLabels(["Name", "Date", "Type", "Full Name"])
         self.ui.tableWidget.setColumnHidden(1, True)
         self.ui.tableWidget.setColumnHidden(2, True)
         self.ui.tableWidget.setColumnHidden(3, True)
-        # self.ui.tableWidget.horizontalHeader().setSortIndicatorShown(True)
 
         # set btn stats
         self.ui.addpreset_btn.setEnabled(False)
@@ -59,7 +60,6 @@ class MyApp(QtWidgets.QWidget):
         self.ui.tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.ui.tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
         # call the sort column if the user click the column header
-        # self.ui.tableWidget.horizontalHeader().sectionClicked.connect(self.sort_col)
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
     def addfile_mth(self):

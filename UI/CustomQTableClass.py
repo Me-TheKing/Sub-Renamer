@@ -42,8 +42,8 @@ class TableWidgetDragRows(QTableWidget):
                     self.setItem(row_index, column_index, column_data)
             event.accept()
             for row_index in range(len(rows_to_move)):
-                self.item(drop_row + row_index, 0).setSelected(True)
-                self.item(drop_row + row_index, 1).setSelected(True)
+                for col_index in range(self.columnCount()):
+                    self.item(drop_row + row_index, col_index).setSelected(True)
         super().dropEvent(event)
 
     def drop_on(self, event):
