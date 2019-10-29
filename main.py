@@ -41,6 +41,7 @@ class MyApp(QtWidgets.QWidget):
 
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
+        self.ui.addfolder_btn.clicked.connect(self.addfile_mth)
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         # call preview_mth for any user input
@@ -63,10 +64,23 @@ class MyApp(QtWidgets.QWidget):
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
     def addfile_mth(self):
-        # QFileDialog.getOpenFileName(self, [Title], [Directory], "[some filters]")
-        # leave the dirctory blank to start the app from the running folder
-        fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
-                                                    "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
+        btn_name = self.sender().text()
+
+        if btn_name == "Add File(s)":
+            # QFileDialog.getOpenFileName(self, [Title], [Directory], "[some filters]")
+            # leave the dirctory blank to start the app from the running folder
+            fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
+                                                        "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
+        else :
+            folder_name = QFileDialog.getExistingDirectory(self, "Add File(s) from Folder")
+            os.chdir(folder_name)
+            my_current_dic = os.getcwd()
+            # the filter is easy but give me a an object
+            # so I will use list comprehension version for fast check if the folder is empty or not
+            # fileNames = filter(os.path.isfile, os.listdir(my_current_dic))
+            fileNames = [f for f in os.listdir(my_current_dic) if os.path.isfile(f)]
+            if not fileNames:
+                print("The Folder is Empty or has only Folder(s)!!")
 
         duplicate = False
         if fileNames:
