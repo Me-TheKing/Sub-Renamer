@@ -227,11 +227,11 @@ class MyApp(QtWidgets.QWidget):
         else:
             self.ui.tableWidget.hideColumn(2)
 
-    def sort_col(self, logical_index, sort_order):
+    def sort_col(self):
         self.ui.tableWidget.setSortingEnabled(True)
-        print("col index: ", logical_index, "sort : ", sort_order)
         self.ui.tableWidget.setSortingEnabled(False)
         self.ui.tableWidget.horizontalHeader().setSortIndicatorShown(True)
+
         self.preview_mth()
 
     def reset_sort(self):
