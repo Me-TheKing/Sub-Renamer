@@ -122,6 +122,22 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.tableWidget.resizeRowsToContents()
 
     def preview_mth(self):
+        # this code is just to enable the addpreset_btn& rename_btn
+        nameLE = self.ui.name_LE.text()
+        serialLE = self.ui.serial_LE.text()
+        extLE = self.ui.ext_LE.text()
+        orderLE = self.ui.order_LE.text()
+        fansubLE = self.ui.fansub_LE.text()
+        delayLE = self.ui.delay_LE.text()
+        langCobox = self.ui.lang_cobox.currentText()
+
+        if len(nameLE + serialLE + extLE + orderLE + fansubLE + delayLE + langCobox) == 0:
+            self.ui.rename_btn.setEnabled(False)
+            self.ui.addpreset_btn.setEnabled(False)
+        else:
+            self.ui.rename_btn.setEnabled(True)
+            self.ui.addpreset_btn.setEnabled(True)
+
         # the information  I need is the Total row(s) and the name of the file
         total_row = self.ui.tableWidget.rowCount()
         a_row = self.ui.tableWidget.item
@@ -168,14 +184,6 @@ class MyApp(QtWidgets.QWidget):
                 item = QtGui.QStandardItem(a_row(index, 0).text())
                 item.setForeground(Qt.red)
                 model.appendRow(item)
-
-        # disable the rename & Unrename btn if there is no row is checked
-        for i in range(total_row):
-            if a_row(i, 0).text() != model.item(i).text():
-                self.ui.rename_btn.setEnabled(True)
-                break
-            else:
-                self.ui.rename_btn.setEnabled(False)
 
         # to make sur the row(s) and column(s) size same as the contents
         self.ui.tableWidget.resizeColumnsToContents()
