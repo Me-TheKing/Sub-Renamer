@@ -48,6 +48,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.addfolder_btn.clicked.connect(self.addfile_mth)
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
+        self.ui.unrename_btn.clicked.connect(self.unrename_mth)
         # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
@@ -88,6 +89,7 @@ class MyApp(QtWidgets.QWidget):
                                                         "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
         else:
             folder_name = QFileDialog.getExistingDirectory(self, "Add File(s) from Folder")
+            # see if the user select a folfe or not
             if folder_name:
                 os.chdir(folder_name)
                 my_current_dic = os.getcwd()
@@ -100,12 +102,12 @@ class MyApp(QtWidgets.QWidget):
                 if not fileNames:
                     print("The Folder is Empty or has only Folder(s)!!")
             else:
+                # if the user cacel the select dialog I have to asign False
+                # or the fileNames will be undefined and the program will crash
                 fileNames = False
-
 
         # start the adding name(s) to the table
         duplicate = False
-        print(bool(fileNames))
         if fileNames:
             # enable the clear_btn
             self.ui.clear_btn.setEnabled(True)
@@ -153,16 +155,7 @@ class MyApp(QtWidgets.QWidget):
 
     def preview_mth(self):
         # this code is just to enable the addpreset_btn& rename_btn
-        # nameLE = self.ui.name_LE.text()
-        # serialLE = self.ui.serial_LE.text()
-        # extLE = self.ui.ext_LE.text()
-        # orderLE = self.ui.order_LE.text()
-        # fansubLE = self.ui.fansub_LE.text()
-        # delayLE = self.ui.delay_LE.text()
-        # langCobox = self.ui.lang_cobox.currentText()
         userfield_len = self.userinput_mth()
-        print("name :", userfield_len)
-
         if userfield_len == 0:
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
@@ -251,6 +244,9 @@ class MyApp(QtWidgets.QWidget):
     def unrename_mth(self):
         for i in range(len(self.original_name_lst)):
             os.rename(self.new_name_lst[i], self.original_name_lst[i])
+
+        self.ui.rename_btn.setEnabled(True)
+        self.ui.unrename_btn.setEnabled(False)
 
     def clear_mth(self):
         # clear all the item(s) in tablewidget
