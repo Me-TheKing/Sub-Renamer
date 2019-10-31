@@ -245,6 +245,11 @@ class MyApp(QtWidgets.QWidget):
         for i in range(len(self.original_name_lst)):
             os.rename(self.new_name_lst[i], self.original_name_lst[i])
 
+        # clear the lists value(s)
+        self.new_name_lst.clear()
+        self.original_name_lst.clear()
+
+        # to disable the unrename_btn and enable the rename_btn
         self.ui.rename_btn.setEnabled(True)
         self.ui.unrename_btn.setEnabled(False)
 
