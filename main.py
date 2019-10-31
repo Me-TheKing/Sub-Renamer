@@ -77,7 +77,7 @@ class MyApp(QtWidgets.QWidget):
         delayLE = self.ui.delay_LE.text()
         langCobox = self.ui.lang_cobox.currentText()
 
-        return len(nameLE + serialLE + extLE + orderLE + fansubLE + delayLE + langCobox)
+        return [nameLE, serialLE, extLE, orderLE, fansubLE, delayLE, langCobox]
 
     def addfile_mth(self):
         # read the btn name
@@ -154,18 +154,20 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.tableWidget.resizeRowsToContents()
 
     def preview_mth(self):
+        # the information  I need is the Total row(s) and the name of the file
+        total_row = self.ui.tableWidget.rowCount()
+        print(total_row)
+        a_row = self.ui.tableWidget.item
+
         # this code is just to enable the addpreset_btn& rename_btn
-        userfield_len = self.userinput_mth()
+        # first join the string from the return list then get the lenght
+        userfield_len = len("".join(self.userinput_mth()))
         if userfield_len == 0:
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
-        else:
+        elif total_row > 0:
             self.ui.rename_btn.setEnabled(True)
             self.ui.addpreset_btn.setEnabled(True)
-
-        # the information  I need is the Total row(s) and the name of the file
-        total_row = self.ui.tableWidget.rowCount()
-        a_row = self.ui.tableWidget.item
 
         ################################################
         # the main adding to the listview is from here #
