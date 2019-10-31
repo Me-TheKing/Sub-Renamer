@@ -201,7 +201,7 @@ class MyApp(QtWidgets.QWidget):
                 item = QtGui.QStandardItem(a_row(index, 0).text())
                 item.setForeground(Qt.red)
                 model.appendRow(item)
-                unchecked +=1
+                unchecked += 1
 
         # this code is just to enable the addpreset_btn& rename_btn
         # first join the string from the return list then get the length
@@ -221,6 +221,20 @@ class MyApp(QtWidgets.QWidget):
         model = self.ui.listView.model()
         total_rows = self.ui.tableWidget.rowCount()
         a_row = self.ui.tableWidget.item
+
+        # check if the new names are not duplicated before the rename
+        #####################################################################
+        ##### note i will make the cell background read for these names #####
+        #####################################################################
+        test_names = []
+        for index in range(total_rows):
+            if a_row(index, 0).checkState() == QtCore.Qt.Checked:
+                listview_name = model.item(index).text()
+                if listview_name not in test_names:
+                    test_names.append(listview_name)
+                else:
+                    print("you have duplicted names!! please check yuor input.")
+                    break
 
         for index in range(total_rows):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
