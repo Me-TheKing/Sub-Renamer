@@ -170,6 +170,7 @@ class MyApp(QtWidgets.QWidget):
             serial = int(self.ui.serial_LE.text())
 
         unchecked = 0
+        test_names = []
         for index in range(total_row):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
                 # I can use the QFileInfo but I will leave it as alternative way
@@ -195,6 +196,11 @@ class MyApp(QtWidgets.QWidget):
                     name = f"{name}.{self.ui.order_LE.text()}"
                 # final step to add the name to the listview
                 item = QtGui.QStandardItem(f"{name}.{ext}")
+                if item.text() not in test_names:
+                    test_names.append(item.text())
+                else:
+                    item.setBackground(Qt.red)
+                    item.setForeground(Qt.white)
                 model.appendRow(item)
             else:
                 # add item(s) to the listview (part02) don't rename
@@ -224,7 +230,7 @@ class MyApp(QtWidgets.QWidget):
 
         # check if the new names are not duplicated before the rename
         #####################################################################
-        ##### note i will make the cell background read for these names #####
+        ##### note i will make the cell background red for these names in preview_mth #####
         #####################################################################
         test_names = []
         for index in range(total_rows):
