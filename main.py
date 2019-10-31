@@ -16,6 +16,10 @@ class MyApp(QtWidgets.QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
+        # set Some Var
+        self.original_name_lst = []
+        self.new_name_lst = []
+
         # set serial_LE, Order_LE, and delay_LE to eccept only Integer numbers
         onlyInt = QIntValidator()
         self.ui.serial_LE.setValidator(onlyInt)
@@ -63,31 +67,52 @@ class MyApp(QtWidgets.QWidget):
         # call the sort column if the user click the column header
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
+    def userinput_mth(self):
+        nameLE = self.ui.name_LE.text()
+        serialLE = self.ui.serial_LE.text()
+        extLE = self.ui.ext_LE.text()
+        orderLE = self.ui.order_LE.text()
+        fansubLE = self.ui.fansub_LE.text()
+        delayLE = self.ui.delay_LE.text()
+        langCobox = self.ui.lang_cobox.currentText()
+
+        return len(nameLE + serialLE + extLE + orderLE + fansubLE + delayLE + langCobox)
+
     def addfile_mth(self):
+        # read the btn name
         btn_name = self.sender().text()
 
+        # check the name of the btn that the user clicked, then save the file(s) name in a list
         if btn_name == "Add File(s)":
-            # QFileDialog.getOpenFileName(self, [Title], [Directory], "[some filters]")
-            # leave the dirctory blank to start the app from the running folder
             fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
                                                         "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
-        else :
+        else:
             folder_name = QFileDialog.getExistingDirectory(self, "Add File(s) from Folder")
-            os.chdir(folder_name)
-            my_current_dic = os.getcwd()
-            # the filter is easy but give me a an object
-            # so I will use list comprehension version for fast check if the folder is empty or not
-            # fileNames = filter(os.path.isfile, os.listdir(my_current_dic))
-            fileNames = [f for f in os.listdir(my_current_dic) if os.path.isfile(f)]
-            if not fileNames:
-                print("The Folder is Empty or has only Folder(s)!!")
+            if folder_name:
+                os.chdir(folder_name)
+                my_current_dic = os.getcwd()
+                # the filter is easy but give me a an object
+                # so I will use list comprehension version for fast check to see if the folder is empty or not
+                # fileNames = filter(os.path.isfile, os.listdir(my_current_dic))
+                fileNames = [f for f in os.listdir(my_current_dic) if os.path.isfile(f)]
 
+                # see if the folder is empty or not
+                if not fileNames:
+                    print("The Folder is Empty or has only Folder(s)!!")
+            else:
+                fileNames = False
+
+
+        # start the adding name(s) to the table
         duplicate = False
+        print(bool(fileNames))
         if fileNames:
             # enable the clear_btn
             self.ui.clear_btn.setEnabled(True)
 
+            # start tacking name by name from the fileNames list
             for name in fileNames:
+
                 # check if the file has added before or not
                 if self.ui.tableWidget.rowCount():
                     for row in range(self.ui.tableWidget.rowCount()):
@@ -96,19 +121,23 @@ class MyApp(QtWidgets.QWidget):
                             print("you olready have this file in your list")
                             break
 
+                # adding the name to the table if it not there before
                 if not duplicate:
                     modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
                     fileName = QFileInfo(name).fileName()
                     ext_type = QFileInfo(name).suffix()
+
                     # setup table widget Row(s)
                     row_position = self.ui.tableWidget.rowCount()
                     self.ui.tableWidget.insertRow(row_position)
                     self.ui.tableWidget.verticalHeader().setVisible(False)
+
                     # add item(s) to the table
                     self.ui.tableWidget.setItem(row_position, 0, QTableWidgetItem(fileName))
                     self.ui.tableWidget.setItem(row_position, 1, QTableWidgetItem(modificationTime))
                     self.ui.tableWidget.setItem(row_position, 2, QTableWidgetItem(ext_type))
                     self.ui.tableWidget.setItem(row_position, 3, QTableWidgetItem(name))
+
                     # set some option(s) to the item
                     for a_row in range(row_position + 1):
                         for a_col in range(self.ui.tableWidget.columnCount()):
@@ -118,20 +147,23 @@ class MyApp(QtWidgets.QWidget):
                             self.ui.tableWidget.item(a_row, a_col).setFlags(
                                 Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 
+                    # resize the columns & rows to fit the text
                     self.ui.tableWidget.resizeColumnsToContents()
                     self.ui.tableWidget.resizeRowsToContents()
 
     def preview_mth(self):
         # this code is just to enable the addpreset_btn& rename_btn
-        nameLE = self.ui.name_LE.text()
-        serialLE = self.ui.serial_LE.text()
-        extLE = self.ui.ext_LE.text()
-        orderLE = self.ui.order_LE.text()
-        fansubLE = self.ui.fansub_LE.text()
-        delayLE = self.ui.delay_LE.text()
-        langCobox = self.ui.lang_cobox.currentText()
+        # nameLE = self.ui.name_LE.text()
+        # serialLE = self.ui.serial_LE.text()
+        # extLE = self.ui.ext_LE.text()
+        # orderLE = self.ui.order_LE.text()
+        # fansubLE = self.ui.fansub_LE.text()
+        # delayLE = self.ui.delay_LE.text()
+        # langCobox = self.ui.lang_cobox.currentText()
+        userfield_len = self.userinput_mth()
+        print("name :", userfield_len)
 
-        if len(nameLE + serialLE + extLE + orderLE + fansubLE + delayLE + langCobox) == 0:
+        if userfield_len == 0:
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
         else:
@@ -196,7 +228,7 @@ class MyApp(QtWidgets.QWidget):
 
         for index in range(total_rows):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
-                # 0 is the Name column
+                # 0 is the 'Name' column
                 original_name = self.ui.tableWidget.item(index, 0).text()
                 new_name = model.item(index).text()
                 # num 3 is the full name column that have the full pathname
@@ -206,11 +238,19 @@ class MyApp(QtWidgets.QWidget):
                 os.chdir(path)
                 os.rename(original_name, new_name)
 
+                # add the original_name and the new_name to two list so i can use them in unrename_mth
+                self.original_name_lst.append(original_name)
+                self.new_name_lst.append(new_name)
+
                 # to disable the rename_btn and then enable the unrename_btn
                 self.ui.rename_btn.setEnabled(False)
                 self.ui.unrename_btn.setEnabled(True)
             else:
                 print("I have to disable the Rename btn !!!!!????")
+
+    def unrename_mth(self):
+        for i in range(len(self.original_name_lst)):
+            os.rename(self.new_name_lst[i], self.original_name_lst[i])
 
     def clear_mth(self):
         # clear all the item(s) in tablewidget
@@ -261,6 +301,10 @@ class MyApp(QtWidgets.QWidget):
         self.ui.tableWidget.horizontalHeader().setSortIndicatorShown(False)
 
         self.preview_mth()
+
+    def addpreset(self):
+        # add the 7 var in a txt file or something like it
+        pass
 
     def on_customContextMenuRequested(self, pos):
         # if there is no table return and don't show the contextMenu
