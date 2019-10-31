@@ -156,18 +156,7 @@ class MyApp(QtWidgets.QWidget):
     def preview_mth(self):
         # the information  I need is the Total row(s) and the name of the file
         total_row = self.ui.tableWidget.rowCount()
-        print(total_row)
         a_row = self.ui.tableWidget.item
-
-        # this code is just to enable the addpreset_btn& rename_btn
-        # first join the string from the return list then get the lenght
-        userfield_len = len("".join(self.userinput_mth()))
-        if userfield_len == 0:
-            self.ui.rename_btn.setEnabled(False)
-            self.ui.addpreset_btn.setEnabled(False)
-        elif total_row > 0:
-            self.ui.rename_btn.setEnabled(True)
-            self.ui.addpreset_btn.setEnabled(True)
 
         ################################################
         # the main adding to the listview is from here #
@@ -180,6 +169,7 @@ class MyApp(QtWidgets.QWidget):
         if self.ui.serial_LE.text():
             serial = int(self.ui.serial_LE.text())
 
+        unchecked = 0
         for index in range(total_row):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
                 # I can use the QFileInfo but I will leave it as alternative way
@@ -211,6 +201,17 @@ class MyApp(QtWidgets.QWidget):
                 item = QtGui.QStandardItem(a_row(index, 0).text())
                 item.setForeground(Qt.red)
                 model.appendRow(item)
+                unchecked +=1
+
+        # this code is just to enable the addpreset_btn& rename_btn
+        # first join the string from the return list then get the length
+        userfield_len = len("".join(self.userinput_mth()))
+        if userfield_len == 0 or unchecked == total_row:
+            self.ui.rename_btn.setEnabled(False)
+            self.ui.addpreset_btn.setEnabled(False)
+        elif total_row > 0:
+            self.ui.rename_btn.setEnabled(True)
+            self.ui.addpreset_btn.setEnabled(True)
 
         # to make sur the row(s) and column(s) size same as the contents
         self.ui.tableWidget.resizeColumnsToContents()
