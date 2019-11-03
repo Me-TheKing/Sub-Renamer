@@ -46,6 +46,7 @@ class MyApp(QtWidgets.QWidget):
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
         self.ui.addfolder_btn.clicked.connect(self.addfile_mth)
+        self.ui.addpreset_btn.clicked.connect(self.addpreset_mth)
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         self.ui.unrename_btn.clicked.connect(self.unrename_mth)
@@ -245,7 +246,8 @@ class MyApp(QtWidgets.QWidget):
         for index in range(total_rows):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
                 listview_name = model.item(index).text()
-                #print(model.item(index).backgroun())
+                # TODO: test a different way to check if there is a duplicated name(s)
+                # print(model.item(index).backgroun())
                 if listview_name not in test_names:
                     test_names.append(listview_name)
                 else:
@@ -339,9 +341,16 @@ class MyApp(QtWidgets.QWidget):
 
         self.preview_mth()
 
-    def addpreset(self):
+    def addpreset_mth(self):
         # add the 7 var in a txt file or something like it
-        pass
+        # maybe I will use dic??
+        # call the userinput_mth to collecate the user input information
+        userinput_info_lst = self.userinput_mth()
+
+        # write the userinput information in the userinput_preset file
+        tmp_path = "C:\\Users\\H.Ali\\Desktop\\Rename Test\\"
+        with open(f"{tmp_path}userinput_presets.pset", "a") as preset:
+            preset.write(str(userinput_info_lst))
 
     def on_customContextMenuRequested(self, pos):
         # if there is no table return and don't show the contextMenu
@@ -376,6 +385,7 @@ class MyApp(QtWidgets.QWidget):
         if self.ui.tableWidget.rowCount() == 0:
             self.ui.clear_btn.setEnabled(False)
 
+    # TODO: maybe creat a def to move rows by keyboard??
     # def moveUP(self):
     #     currentRow = self.ui.listWidget.currentRow()
     #     currentItem = self.ui.listWidget.takeItem(currentRow)
