@@ -1,4 +1,5 @@
 import os
+import pathlib
 import sys
 import time
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -349,8 +350,12 @@ class MyApp(QtWidgets.QWidget):
 
         # write the userinput information in the userinput_preset file
         tmp_path = "C:\\Users\\H.Ali\\Desktop\\Rename Test\\"
-        with open(f"{tmp_path}userinput_presets.pset", "a") as preset:
-            preset.write(str(userinput_info_lst))
+        with open(f"{tmp_path}userinput_presets.pset", "r+") as preset:
+            if len(preset.readlines()) < 10:
+                preset.write(str(userinput_info_lst)+"\n")
+            else:
+                # TODO: Qdailog
+                print("you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
 
     def on_customContextMenuRequested(self, pos):
         # if there is no table return and don't show the contextMenu
