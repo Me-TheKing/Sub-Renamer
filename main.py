@@ -85,6 +85,8 @@ class MyApp(QtWidgets.QWidget):
 
         # check the name of the btn that the user clicked, then save the file(s) name in a list
         if btn_name == "Add File(s)":
+            # TODO: move the option in new var
+            #  I will make a var in the __ini__ def that contain the option file exe
             fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
                                                         "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
         else:
@@ -97,6 +99,11 @@ class MyApp(QtWidgets.QWidget):
                 # so I will use list comprehension version for fast check to see if the folder is empty or not
                 # fileNames = filter(os.path.isfile, os.listdir(my_current_dic))
                 fileNames = [f for f in os.listdir(my_current_dic) if os.path.isfile(f)]
+                # TODO: make a foldernames var
+                #  I will add the folder(s) name in the tbl and uncheak them by defualt
+                #  and add two contextmenu to select all the rows or unselect all
+                #  and maybe select folder name only or select file name only
+                #  and see if I can make select files by there exe
 
                 # see if the folder is empty or not
                 if not fileNames:
@@ -194,13 +201,17 @@ class MyApp(QtWidgets.QWidget):
                     name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}"
                 elif self.ui.order_LE.text():
                     name = f"{name}.{self.ui.order_LE.text()}"
+
                 # final step to add the name to the listview
                 item = QtGui.QStandardItem(f"{name}.{ext}")
+
+                # check if this name is duplicated or not
                 if item.text() not in test_names:
                     test_names.append(item.text())
                 else:
                     item.setBackground(Qt.red)
                     item.setForeground(Qt.white)
+
                 model.appendRow(item)
             else:
                 # add item(s) to the listview (part02) don't rename
@@ -209,7 +220,7 @@ class MyApp(QtWidgets.QWidget):
                 model.appendRow(item)
                 unchecked += 1
 
-        # this code is just to enable the addpreset_btn& rename_btn
+        # this code is just to enable the addpreset_btn & rename_btn
         # first join the string from the return list then get the length
         userfield_len = len("".join(self.userinput_mth()))
         if userfield_len == 0 or unchecked == total_row:
@@ -229,40 +240,42 @@ class MyApp(QtWidgets.QWidget):
         a_row = self.ui.tableWidget.item
 
         # check if the new names are not duplicated before the rename
-        #####################################################################
-        ##### note i will make the cell background red for these names in preview_mth #####
-        #####################################################################
         test_names = []
+        duplicated = False
         for index in range(total_rows):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
                 listview_name = model.item(index).text()
+                #print(model.item(index).backgroun())
                 if listview_name not in test_names:
                     test_names.append(listview_name)
                 else:
                     print("you have duplicted names!! please check yuor input.")
+                    duplicated = True
                     break
 
-        for index in range(total_rows):
-            if a_row(index, 0).checkState() == QtCore.Qt.Checked:
-                # 0 is the 'Name' column
-                original_name = self.ui.tableWidget.item(index, 0).text()
-                new_name = model.item(index).text()
-                # num 3 is the full name column that have the full pathname
-                full_name = self.ui.tableWidget.item(index, 3).text()
-                path = QFileInfo(full_name).path().replace("/", "\\")
-                # chang to the path dir and then rename
-                os.chdir(path)
-                os.rename(original_name, new_name)
+        if not duplicated:
+            for index in range(total_rows):
+                if a_row(index, 0).checkState() == QtCore.Qt.Checked:
+                    # 0 is the 'Name' column
+                    original_name = self.ui.tableWidget.item(index, 0).text()
+                    new_name = model.item(index).text()
+                    # num 3 is the full name column that have the full pathname
+                    full_name = self.ui.tableWidget.item(index, 3).text()
+                    path = QFileInfo(full_name).path().replace("/", "\\")
+                    # chang to the path dir and then rename
+                    os.chdir(path)
+                    os.rename(original_name, new_name)
 
-                # add the original_name and the new_name to two list so i can use them in unrename_mth
-                self.original_name_lst.append(original_name)
-                self.new_name_lst.append(new_name)
+                    # add the original_name and the new_name to two list so i can use them in unrename_mth
+                    self.original_name_lst.append(original_name)
+                    self.new_name_lst.append(new_name)
 
-                # to disable the rename_btn and then enable the unrename_btn
-                self.ui.rename_btn.setEnabled(False)
-                self.ui.unrename_btn.setEnabled(True)
-            else:
-                print("I have to disable the Rename btn !!!!!????")
+                    # to disable the rename_btn and then enable the unrename_btn
+                    self.ui.rename_btn.setEnabled(False)
+                    self.ui.unrename_btn.setEnabled(True)
+                    # TODO: see if you want this else or not????
+                else:
+                    print("I have to disable the Rename btn !!!!!????")
 
     def unrename_mth(self):
         for i in range(len(self.original_name_lst)):
