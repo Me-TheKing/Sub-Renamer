@@ -56,6 +56,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         self.ui.unrename_btn.clicked.connect(self.unrename_mth)
         self.ui.preset_cobox.currentIndexChanged.connect(self.set_preset_mth)
+        self.ui.log_cobox.currentIndexChanged.connect(self.set_preset_mth)
         # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
@@ -394,12 +395,26 @@ class MyApp(QtWidgets.QWidget):
                 pass
 
     def set_preset_mth(self, index):
-        # see how to know which combobox is sending the signal?? so you know the filename
-        with open(f"{self.tmp_path}userinput_presets.pset", "r") as preset:
-            line = preset.readlines(index)[0]
+        # get the name of the combobox from the sender mth
+        combobox_name = self.sender().objectName()
+        file_name = "userinput.pset" if combobox_name == "preset_cobox" else "history.pset"
+
+        with open(f"{self.tmp_path}{file_name}", "r") as preset:
+            # read the preset file and remove the newline char '\n'
+            preset_lst = preset.read().splitlines()
+            line = preset_lst[index-1]
             # the literal_eval() mth from ast is to convert back the text line from str to dict
             line = ast.literal_eval(line)
-            print(line["Preset info"])
+            set_lst = line["Preset info"]
+
+            # set the preset
+            self.ui.name_LE.setText(set_lst[0])
+            self.ui.serial_LE.setText(set_lst[1])
+            self.ui.ext_LE.setText(set_lst[2])
+            self.ui.order_LE.setText(set_lst[3])
+            self.ui.fansub_LE.setText(set_lst[4])
+            self.ui.delay_LE.setText(set_lst[5])
+            self.ui.lang_cobox.setCurrentText(set_lst[6])
 
     def on_customContextMenuRequested(self, pos):
         # if there is no table return and don't show the contextMenu
