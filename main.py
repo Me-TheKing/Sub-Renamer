@@ -1,13 +1,13 @@
 import ast
 import datetime
 import os
-import pathlib
 import sys
 import time
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QFileInfo, Qt
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QAbstractItemView, QInputDialog, QLineEdit
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit
 
 from UI.maingui import Ui_Form  # importing our generated file
 
@@ -52,7 +52,7 @@ class MyApp(QtWidgets.QWidget):
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
         self.ui.addfolder_btn.clicked.connect(self.addfile_mth)
-        self.ui.addpreset_btn.clicked.connect(lambda file_name:self.addpreset_history_mth("userinput.pset"))
+        self.ui.addpreset_btn.clicked.connect(lambda file_name: self.addpreset_history_mth("userinput.pset"))
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         self.ui.unrename_btn.clicked.connect(self.unrename_mth)
@@ -378,8 +378,6 @@ class MyApp(QtWidgets.QWidget):
                         preset_name = self.get_preset_name_mth(default_name)
                         if preset_name:
                             preset_dict = {"Preset Name": preset_name, "Preset info": userinput_info_lst}
-                        else:
-                            preset.close()
                     else:
                         preset_dict = {"Preset Name": default_name, "Preset info": userinput_info_lst}
 
@@ -398,7 +396,7 @@ class MyApp(QtWidgets.QWidget):
                         # TODO: Qdailog only for userinput.pset
                         print(
                             "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
-        except:
+        except UnboundLocalError:
             preset.close()
         else:
             self.preset_history_cobox_mth(file_name)
@@ -431,7 +429,7 @@ class MyApp(QtWidgets.QWidget):
         with open(f"{self.tmp_path}{file_name}", "r") as preset:
             # read the preset file and remove the newline char '\n'
             preset_lst = preset.read().splitlines()
-            line = preset_lst[index-1]
+            line = preset_lst[index - 1]
             # the literal_eval() mth from ast is to convert back the text line from str to dict
             line = ast.literal_eval(line)
             set_lst = line["Preset info"]
@@ -482,12 +480,12 @@ class MyApp(QtWidgets.QWidget):
         pass
 
     def get_preset_name_mth(self, preset_name):
-        text, okPressed = QInputDialog.getText(self, "Get Preset Name", "Your Preset name:", QLineEdit.Normal, preset_name)
+        text, okPressed = QInputDialog.getText(self, "Get Preset Name", "Your Preset name:", QLineEdit.Normal,
+                                               preset_name)
         if okPressed and text != '':
             return text
         else:
             return False
-
 
     # TODO: maybe creat a def to move rows by keyboard??
     # def moveUP(self):
