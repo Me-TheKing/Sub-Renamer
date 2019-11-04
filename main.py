@@ -6,7 +6,7 @@ import time
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QFileInfo, Qt
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QAbstractItemView
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QAbstractItemView, QInputDialog, QLineEdit
 
 from UI.maingui import Ui_Form  # importing our generated file
 
@@ -357,31 +357,40 @@ class MyApp(QtWidgets.QWidget):
         userinput_info_lst = self.userinput_mth()
 
         # write the userinput information in the userinput.pset file
-        with open(f"{self.tmp_path}{file_name}", "r+") as preset:
-            pset_lst = preset.readlines()
-            # set the preset limit to 10 preset only
-            if len(pset_lst) < 10:
-                # TODO: Qdailog ask the user for the preset name,
-                #  by defualt I will take the name_le.text() as the name
-                #  and this Qdailog only for the userinput.pset
-                preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
-                preset.write(str(preset_dict) + "\n")
-            else:
-                # update history.pset by deleting the fisrt preset and shift all the lines up then add the new preset
-                if file_name == "history.pset":
-                    del pset_lst[0]                 # delete the first line
-                    preset.seek(0)                  # start from the first line
-                    preset.truncate()               # clear the file
-                    preset.writelines(pset_lst)     # add the rest of the lines to the file from the top
-                    # insert the new line in the bottom
-                    preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+        try:
+            with open(f"{self.tmp_path}{file_name}", "r+") as preset:
+                pset_lst = preset.readlines()
+                # set the preset limit to 10 preset only
+                if len(pset_lst) < 10:
+                    if file_name == "userinput.pset":
+                        preset_name = self.get_preset_name_mth(userinput_info_lst[0])
+                        if preset_name:
+                            preset_dict = {"Preset Name": preset_name, "Preset info": userinput_info_lst}
+                        else:
+                            preset.close()
+                    else:
+                        # TODO: maybe I will use the date for the name???
+                        preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+
                     preset.write(str(preset_dict) + "\n")
                 else:
-                    # TODO: Qdailog only for userinput.pset
-                    print(
-                        "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
-
-        self.preset_history_cobox_mth(file_name)
+                    # update history.pset by deleting the first preset and shift all the lines up then add the new preset
+                    if file_name == "history.pset":
+                        del pset_lst[0]                 # delete the first line
+                        preset.seek(0)                  # start from the first line
+                        preset.truncate()               # clear the file
+                        preset.writelines(pset_lst)     # add the rest of the lines to the file from the top
+                        # insert the new line in the bottom
+                        preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+                        preset.write(str(preset_dict) + "\n")
+                    else:
+                        # TODO: Qdailog only for userinput.pset
+                        print(
+                            "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
+        except:
+            pass
+        else:
+            self.preset_history_cobox_mth(file_name)
 
     def preset_history_cobox_mth(self, file_name):
         try:
@@ -457,6 +466,17 @@ class MyApp(QtWidgets.QWidget):
         # disable the clear_btn if there is no rows
         if self.ui.tableWidget.rowCount() == 0:
             self.ui.clear_btn.setEnabled(False)
+
+    def msgbox_dailog_mth(self):
+        pass
+
+    def get_preset_name_mth(self, preset_name):
+        text, okPressed = QInputDialog.getText(self, "Get Preset Name", "Your Preset name:", QLineEdit.Normal, preset_name)
+        if okPressed and text != '':
+            return text
+        else:
+            return False
+
 
     # TODO: maybe creat a def to move rows by keyboard??
     # def moveUP(self):
