@@ -32,7 +32,8 @@ class MyApp(QtWidgets.QWidget):
         # call the all the method(s)
         self.hide_unhide_col()
         self.btn_handler()
-        self.preset_cobox_mth()
+        self.preset_history_cobox_mth("userinput.pset")
+        self.preset_history_cobox_mth("history.pset")
 
         # setup table widget and Column(s)
         self.ui.tableWidget.setColumnCount(4)
@@ -50,10 +51,11 @@ class MyApp(QtWidgets.QWidget):
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
         self.ui.addfolder_btn.clicked.connect(self.addfile_mth)
-        self.ui.addpreset_btn.clicked.connect(self.addpreset_mth)
+        self.ui.addpreset_btn.clicked.connect(lambda file_name:self.addpreset_history_mth("userinput.pset"))
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         self.ui.unrename_btn.clicked.connect(self.unrename_mth)
+        self.ui.preset_cobox.currentIndexChanged.connect(self.set_preset_mth)
         # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
@@ -279,6 +281,10 @@ class MyApp(QtWidgets.QWidget):
                     # to disable the rename_btn and then enable the unrename_btn
                     self.ui.rename_btn.setEnabled(False)
                     self.ui.unrename_btn.setEnabled(True)
+
+                    # save the userinput in history.pset file
+                    self.addpreset_history_mth("history.pset")
+
                     # TODO: see if you want this else or not????
                 else:
                     print("I have to disable the Rename btn !!!!!????")
@@ -345,43 +351,55 @@ class MyApp(QtWidgets.QWidget):
 
         self.preview_mth()
 
-    def addpreset_mth(self):
+    def addpreset_history_mth(self, file_name):
         # add the 7 var in a txt file or something like it
         # maybe I will use dic??
 
         # call the userinput_mth to collecate the user input information
         userinput_info_lst = self.userinput_mth()
 
-        # write the userinput information in the userinput_preset file
-        with open(f"{self.tmp_path}userinput_presets.pset", "r+") as preset:
+        # write the userinput information in the userinput.pset file
+        with open(f"{self.tmp_path}{file_name}", "r+") as preset:
             # set the preset limit to 10 preset only
             if len(preset.readlines()) < 10:
                 # TODO: Qdailog ask the user for the preset name,
                 #  by defualt I will take the name_le.text() as the name
-                preset_dic = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
-                preset.write(str(preset_dic) + "\n")
+                preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+                preset.write(str(preset_dict) + "\n")
             else:
                 # TODO: Qdailog
                 print(
                     "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
 
-        self.preset_cobox_mth()
+        self.preset_history_cobox_mth(file_name)
 
-    def preset_cobox_mth(self):
+    def preset_history_cobox_mth(self, file_name):
         try:
-            # clear the combobox before add the new preset
-            for i in range(self.ui.preset_cobox.count(), 0, -1):
-                self.ui.preset_cobox.removeItem(i)
+            # first know which combobox is called and save it name in cobox_name var
+            cobox_name = self.ui.preset_cobox if file_name == "userinput.pset" else self.ui.log_cobox
 
-            with open(f"{self.tmp_path}userinput_presets.pset", "r") as preset:
+            # clear the combobox before add the new preset
+            for i in range(cobox_name.count(), 0, -1):
+                cobox_name.removeItem(i)
+
+            # add preset name to the combobox
+            with open(f"{self.tmp_path}{file_name}", "r") as preset:
                 for line in preset.readlines():
                     # the literal_eval() mth from ast is to convert back the text line from str to dict
                     line = ast.literal_eval(line)
-                    self.ui.preset_cobox.addItem(line["Preset Name"])
+                    cobox_name.addItem(line["Preset Name"])
         except FileNotFoundError:
             # only creat the file if it not exists
-            with open(f"{self.tmp_path}userinput_presets.pset", "x"):
+            with open(f"{self.tmp_path}{file_name}", "x"):
                 pass
+
+    def set_preset_mth(self, index):
+        # see how to know which combobox is sending the signal?? so you know the filename
+        with open(f"{self.tmp_path}userinput_presets.pset", "r") as preset:
+            line = preset.readlines(index)[0]
+            # the literal_eval() mth from ast is to convert back the text line from str to dict
+            line = ast.literal_eval(line)
+            print(line["Preset info"])
 
     def on_customContextMenuRequested(self, pos):
         # if there is no table return and don't show the contextMenu
