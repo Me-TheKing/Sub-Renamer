@@ -365,11 +365,16 @@ class MyApp(QtWidgets.QWidget):
                 print(
                     "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
 
+        self.preset_cobox_mth()
+
     def preset_cobox_mth(self):
         try:
+            # clear the combobox before add the new preset
+            for i in range(self.ui.preset_cobox.count(), 0, -1):
+                self.ui.preset_cobox.removeItem(i)
+
             with open(f"{self.tmp_path}userinput_presets.pset", "r") as preset:
                 for line in preset.readlines():
-                    print("test")
                     # the literal_eval() mth from ast is to convert back the text line from str to dict
                     line = ast.literal_eval(line)
                     self.ui.preset_cobox.addItem(line["Preset Name"])
