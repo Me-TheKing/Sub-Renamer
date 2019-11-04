@@ -129,7 +129,9 @@ class MyApp(QtWidgets.QWidget):
 
                 # see if the folder is empty or not
                 if not fileNames:
-                    print("The Folder is Empty or has only Folder(s)!!")
+                    msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning", "The Folder is Empty!!",
+                                   "No File Or Folder will be added."]
+                    msgbox_dailog_mth(msginfo_lst)
             else:
                 # if the user cacel the select dialog I have to asign False
                 # or the fileNames will be undefined and the program will crash
