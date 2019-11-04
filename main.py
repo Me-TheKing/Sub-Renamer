@@ -151,7 +151,9 @@ class MyApp(QtWidgets.QWidget):
                     for row in range(self.ui.tableWidget.rowCount()):
                         if name == self.ui.tableWidget.item(row, 3).text():
                             duplicate = True
-                            print("you olready have this file in your list")
+                            msginfo_lst = [QMessageBox.Warning, "Duplicate Warning", f"The {QFileInfo(name).fileName()} is in your list!!",
+                                           f"{QFileInfo(name).fileName()} will not be added to your list."]
+                            msgbox_dailog_mth(msginfo_lst)
                             break
 
                 # adding the name to the table if it not there before
