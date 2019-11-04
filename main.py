@@ -353,24 +353,33 @@ class MyApp(QtWidgets.QWidget):
         self.preview_mth()
 
     def addpreset_history_mth(self, file_name):
-        # add the 7 var in a txt file or something like it
-        # maybe I will use dic??
-
         # call the userinput_mth to collecate the user input information
         userinput_info_lst = self.userinput_mth()
 
         # write the userinput information in the userinput.pset file
         with open(f"{self.tmp_path}{file_name}", "r+") as preset:
+            pset_lst = preset.readlines()
             # set the preset limit to 10 preset only
-            if len(preset.readlines()) < 10:
+            if len(pset_lst) < 10:
                 # TODO: Qdailog ask the user for the preset name,
                 #  by defualt I will take the name_le.text() as the name
+                #  and this Qdailog only for the userinput.pset
                 preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
                 preset.write(str(preset_dict) + "\n")
             else:
-                # TODO: Qdailog
-                print(
-                    "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
+                # update history.pset by deleting the fisrt preset and shift all the lines up then add the new preset
+                if file_name == "history.pset":
+                    del pset_lst[0]                 # delete the first line
+                    preset.seek(0)                  # start from the first line
+                    preset.truncate()               # clear the file
+                    preset.writelines(pset_lst)     # add the rest of the lines to the file from the top
+                    # insert the new line in the bottom
+                    preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+                    preset.write(str(preset_dict) + "\n")
+                else:
+                    # TODO: Qdailog only for userinput.pset
+                    print(
+                        "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
 
         self.preset_history_cobox_mth(file_name)
 
