@@ -1,4 +1,5 @@
 import ast
+import datetime
 import os
 import pathlib
 import sys
@@ -356,21 +357,31 @@ class MyApp(QtWidgets.QWidget):
         # call the userinput_mth to collecate the user input information
         userinput_info_lst = self.userinput_mth()
 
+        # the full date
+        full_date = datetime.datetime.now()
+        # if there is no text in the name_LE I wll creat a default name by the date
+        if file_name == "userinput.pset":
+            default_name = userinput_info_lst[0] if len(userinput_info_lst[0]) != 0 else "Preset " + full_date.strftime(
+                "%d-%m-%y_%H-%M")
+        else:
+            # I will allways create preset name by the date for the history.pset names
+            default_name = "Preset " + full_date.strftime("%d-%m-%y_%H-%M")
+
         # write the userinput information in the userinput.pset file
         try:
             with open(f"{self.tmp_path}{file_name}", "r+") as preset:
                 pset_lst = preset.readlines()
                 # set the preset limit to 10 preset only
                 if len(pset_lst) < 10:
+                    # if the user want to save the preset a QDailoginput will ask him for the name
                     if file_name == "userinput.pset":
-                        preset_name = self.get_preset_name_mth(userinput_info_lst[0])
+                        preset_name = self.get_preset_name_mth(default_name)
                         if preset_name:
                             preset_dict = {"Preset Name": preset_name, "Preset info": userinput_info_lst}
                         else:
                             preset.close()
                     else:
-                        # TODO: maybe I will use the date for the name???
-                        preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+                        preset_dict = {"Preset Name": default_name, "Preset info": userinput_info_lst}
 
                     preset.write(str(preset_dict) + "\n")
                 else:
@@ -381,14 +392,14 @@ class MyApp(QtWidgets.QWidget):
                         preset.truncate()               # clear the file
                         preset.writelines(pset_lst)     # add the rest of the lines to the file from the top
                         # insert the new line in the bottom
-                        preset_dict = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+                        preset_dict = {"Preset Name": default_name, "Preset info": userinput_info_lst}
                         preset.write(str(preset_dict) + "\n")
                     else:
                         # TODO: Qdailog only for userinput.pset
                         print(
                             "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
         except:
-            pass
+            preset.close()
         else:
             self.preset_history_cobox_mth(file_name)
 
