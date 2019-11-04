@@ -1,3 +1,4 @@
+import ast
 import os
 import pathlib
 import sys
@@ -20,6 +21,7 @@ class MyApp(QtWidgets.QWidget):
         # set Some Var
         self.original_name_lst = []
         self.new_name_lst = []
+        self.tmp_path = "C:\\Users\\H.Ali\\Desktop\\Rename Test\\"
 
         # set serial_LE, Order_LE, and delay_LE to eccept only Integer numbers
         onlyInt = QIntValidator()
@@ -30,6 +32,7 @@ class MyApp(QtWidgets.QWidget):
         # call the all the method(s)
         self.hide_unhide_col()
         self.btn_handler()
+        self.preset_cobox_mth()
 
         # setup table widget and Column(s)
         self.ui.tableWidget.setColumnCount(4)
@@ -345,17 +348,35 @@ class MyApp(QtWidgets.QWidget):
     def addpreset_mth(self):
         # add the 7 var in a txt file or something like it
         # maybe I will use dic??
+
         # call the userinput_mth to collecate the user input information
         userinput_info_lst = self.userinput_mth()
 
         # write the userinput information in the userinput_preset file
-        tmp_path = "C:\\Users\\H.Ali\\Desktop\\Rename Test\\"
-        with open(f"{tmp_path}userinput_presets.pset", "r+") as preset:
+        with open(f"{self.tmp_path}userinput_presets.pset", "r+") as preset:
+            # set the preset limit to 10 preset only
             if len(preset.readlines()) < 10:
-                preset.write(str(userinput_info_lst)+"\n")
+                # TODO: Qdailog ask the user for the preset name,
+                #  by defualt I will take the name_le.text() as the name
+                preset_dic = {"Preset Name": userinput_info_lst[0], "Preset info": userinput_info_lst}
+                preset.write(str(preset_dic) + "\n")
             else:
                 # TODO: Qdailog
-                print("you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
+                print(
+                    "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
+
+    def preset_cobox_mth(self):
+        try:
+            with open(f"{self.tmp_path}userinput_presets.pset", "r") as preset:
+                for line in preset.readlines():
+                    print("test")
+                    # the literal_eval() mth from ast is to convert back the text line from str to dict
+                    line = ast.literal_eval(line)
+                    self.ui.preset_cobox.addItem(line["Preset Name"])
+        except FileNotFoundError:
+            # only creat the file if it not exists
+            with open(f"{self.tmp_path}userinput_presets.pset", "x"):
+                pass
 
     def on_customContextMenuRequested(self, pos):
         # if there is no table return and don't show the contextMenu
