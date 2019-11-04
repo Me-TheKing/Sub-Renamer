@@ -7,9 +7,22 @@ import time
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QFileInfo, Qt
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox
 
 from UI.maingui import Ui_Form  # importing our generated file
+
+
+def msgbox_dailog_mth(msginfo_lst):
+    msg = QMessageBox()
+    msg.setIcon(msginfo_lst[0])
+
+    msg.setWindowTitle(msginfo_lst[1])
+    msg.setText(msginfo_lst[2])
+    msg.setInformativeText(msginfo_lst[3])
+    # msg.setDetailedText("The details are as follows:")
+    msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+    # msg.buttonClicked.connect(msgbtn)
+    msg.exec_()
 
 
 class MyApp(QtWidgets.QWidget):
@@ -372,6 +385,7 @@ class MyApp(QtWidgets.QWidget):
             with open(f"{self.tmp_path}{file_name}", "r+") as preset:
                 pset_lst = preset.readlines()
                 # set the preset limit to 10 preset only
+                limit_reach = False
                 if len(pset_lst) < 10:
                     # if the user want to save the preset a QDailoginput will ask him for the name
                     if file_name == "userinput.pset":
@@ -381,25 +395,28 @@ class MyApp(QtWidgets.QWidget):
                     else:
                         preset_dict = {"Preset Name": default_name, "Preset info": userinput_info_lst}
 
+                    # this will rise error if the above if didn't defined the preset_dict
                     preset.write(str(preset_dict) + "\n")
                 else:
                     # update history.pset by deleting the first preset and shift all the lines up then add the new preset
                     if file_name == "history.pset":
-                        del pset_lst[0]                 # delete the first line
-                        preset.seek(0)                  # start from the first line
-                        preset.truncate()               # clear the file
-                        preset.writelines(pset_lst)     # add the rest of the lines to the file from the top
+                        del pset_lst[0]  # delete the first line
+                        preset.seek(0)  # start from the first line
+                        preset.truncate()  # clear the file
+                        preset.writelines(pset_lst)  # add the rest of the lines to the file from the top
                         # insert the new line in the bottom
                         preset_dict = {"Preset Name": default_name, "Preset info": userinput_info_lst}
                         preset.write(str(preset_dict) + "\n")
                     else:
-                        # TODO: Qdailog only for userinput.pset
-                        print(
-                            "you reach the max limit of preset option!!! pleae delete one or more preset from the preset droplist")
+                        # show msg wrning that the user reach the preset limits and he/she must delete one or more preset
+                        msginfo_lst = [QMessageBox.Warning, "Add Preset Warning", "Preset Limite Reach", "you need to delete one or more from your Preset(s) Droplist"]
+                        msgbox_dailog_mth(msginfo_lst)
+                        limit_reach = True
         except UnboundLocalError:
             preset.close()
         else:
-            self.preset_history_cobox_mth(file_name)
+            if not limit_reach:
+                self.preset_history_cobox_mth(file_name)
 
     def preset_history_cobox_mth(self, file_name):
         try:
@@ -475,9 +492,6 @@ class MyApp(QtWidgets.QWidget):
         # disable the clear_btn if there is no rows
         if self.ui.tableWidget.rowCount() == 0:
             self.ui.clear_btn.setEnabled(False)
-
-    def msgbox_dailog_mth(self):
-        pass
 
     def get_preset_name_mth(self, preset_name):
         text, okPressed = QInputDialog.getText(self, "Get Preset Name", "Your Preset name:", QLineEdit.Normal,
