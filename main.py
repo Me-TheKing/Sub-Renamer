@@ -117,11 +117,6 @@ class MyApp(QtWidgets.QWidget):
             if folder_name:
                 os.chdir(folder_name)
                 my_current_dir = os.getcwd()
-                # TODO: make a foldernames var
-                #  I will add the folder(s) name in the tbl and uncheak them by defualt
-                #  and add two contextmenu to select all the rows or unselect all
-                #  and maybe select folder name only or select file name only
-                #  and see if I can make select files by there exe
 
                 # see if the folder is empty or not
                 if len(folder_name) == 0:
@@ -162,10 +157,14 @@ class MyApp(QtWidgets.QWidget):
 
                 # adding the name to the table if it not there before
                 if not duplicate:
-                    modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
+
+                    # set the 3 var for each column. the name, date, and type
                     fileName = QFileInfo(name).fileName()
+                    modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
+                    # see if the name is folder or file
                     if os.path.isfile(name):
                         ext_type = QFileInfo(name).suffix()
+                        # if the file has no ext then the type by default is 'File'
                         if not ext_type:
                             ext_type = "File"
                     else:
@@ -185,6 +184,7 @@ class MyApp(QtWidgets.QWidget):
                     # set some option(s) to the item
                     if ext_type == "Folder":
                         self.ui.tableWidget.item(row_position, 0).setCheckState(Qt.Unchecked)
+                        self.ui.tableWidget.item(row_position, 0).setForeground(Qt.blue)
                     else:
                         self.ui.tableWidget.item(row_position, 0).setCheckState(Qt.Checked)
 
@@ -481,6 +481,9 @@ class MyApp(QtWidgets.QWidget):
             self.ui.lang_cobox.setCurrentText(set_lst[6])
 
     def on_customContextMenuRequested(self, pos):
+        # TODO: add two contextmenu to select all the rows or unselect all
+        #  and maybe select folder name only or select file name only
+        #  and see if I can make select files by there exe
         # if there is no table return and don't show the contextMenu
         it = self.ui.tableWidget.itemAt(pos)
         if it is None: return
