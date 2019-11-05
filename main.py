@@ -112,7 +112,7 @@ class MyApp(QtWidgets.QWidget):
             fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
                                                         "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
         else:
-            folder_name = QFileDialog.getExistingDirectory(self, "Add File(s) from Folder")
+            folder_name = QFileDialog.getExistingDirectory(self, "Select Folder")
             # see if the user select a folfe or not
             if folder_name:
                 os.chdir(folder_name)
@@ -132,13 +132,17 @@ class MyApp(QtWidgets.QWidget):
                     msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning", "The Folder is Empty!!",
                                    "No File Or Folder will be added."]
                     msgbox_dailog_mth(msginfo_lst)
+                else:
+                    # make the name(s) in fileNames list look the same as the format from the getOpenFileNames
+                    cwdpath = my_current_dic.replace("\\", "/")
+                    for index in range(len(fileNames)):
+                        fileNames[index] = f"{cwdpath}/{fileNames[index]}"
             else:
-                # if the user cacel the select dialog I have to asign False
+                # if the user cancel the select dialog I have to asign False
                 # or the fileNames will be undefined and the program will crash
                 fileNames = False
 
         # start the adding name(s) to the table
-        duplicate = False
         if fileNames:
             # enable the clear_btn
             self.ui.clear_btn.setEnabled(True)
@@ -147,6 +151,7 @@ class MyApp(QtWidgets.QWidget):
             for name in fileNames:
 
                 # check if the file has added before or not
+                duplicate = False
                 if self.ui.tableWidget.rowCount():
                     for row in range(self.ui.tableWidget.rowCount()):
                         if name == self.ui.tableWidget.item(row, 3).text():
@@ -232,6 +237,8 @@ class MyApp(QtWidgets.QWidget):
                 item = QtGui.QStandardItem(f"{name}.{ext}")
 
                 # check if this name is duplicated or not
+                # TODO: if the name is duplicated but it's from differnet path
+                #  then just change the color to skyblue or green
                 if item.text() not in test_names:
                     test_names.append(item.text())
                 else:
