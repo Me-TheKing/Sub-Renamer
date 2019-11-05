@@ -116,11 +116,11 @@ class MyApp(QtWidgets.QWidget):
             # see if the user select a folfe or not
             if folder_name:
                 os.chdir(folder_name)
-                my_current_dic = os.getcwd()
+                my_current_dir = os.getcwd()
                 # the filter is easy but give me a an object
                 # so I will use list comprehension version for fast check to see if the folder is empty or not
                 # fileNames = filter(os.path.isfile, os.listdir(my_current_dic))
-                fileNames = [f for f in os.listdir(my_current_dic) if os.path.isfile(f)]
+                # fileNames = [f for f in os.listdir(my_current_dir) if os.path.isfile(f)] **1**
                 # TODO: make a foldernames var
                 #  I will add the folder(s) name in the tbl and uncheak them by defualt
                 #  and add two contextmenu to select all the rows or unselect all
@@ -128,15 +128,19 @@ class MyApp(QtWidgets.QWidget):
                 #  and see if I can make select files by there exe
 
                 # see if the folder is empty or not
-                if not fileNames:
-                    msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning", "The Folder is Empty!!",
+                # if not fileNames:**2**
+                if len(folder_name) == 0:
+                    msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning",
+                                   "The Folder is Empty!!",
                                    "No File Or Folder will be added."]
                     msgbox_dailog_mth(msginfo_lst)
                 else:
                     # make the name(s) in fileNames list look the same as the format from the getOpenFileNames
-                    cwdpath = my_current_dic.replace("\\", "/")
-                    for index in range(len(fileNames)):
-                        fileNames[index] = f"{cwdpath}/{fileNames[index]}"
+                    cwdpath = my_current_dir.replace("\\", "/")
+                    fileNames = []
+                    for f_name in os.listdir(my_current_dir):
+                        print(f_name)
+                        fileNames.append(f"{cwdpath}/{f_name}")
             else:
                 # if the user cancel the select dialog I have to asign False
                 # or the fileNames will be undefined and the program will crash
@@ -165,7 +169,12 @@ class MyApp(QtWidgets.QWidget):
                 if not duplicate:
                     modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
                     fileName = QFileInfo(name).fileName()
-                    ext_type = QFileInfo(name).suffix()
+                    if os.path.isfile(name):
+                        ext_type = QFileInfo(name).suffix()
+                        if not ext_type:
+                            ext_type = "File"
+                    else:
+                        ext_type = "Folder"
 
                     # setup table widget Row(s)
                     row_position = self.ui.tableWidget.rowCount()
@@ -283,7 +292,10 @@ class MyApp(QtWidgets.QWidget):
                 if listview_name not in test_names:
                     test_names.append(listview_name)
                 else:
-                    print("you have duplicted names!! please check yuor input.")
+                    msginfo_lst = [QMessageBox.Warning, "Duplicate Warning",
+                                   "You Have One Or More Duplicated Name!!",
+                                   "Please Check Your Name(s) List, and Try Again."]
+                    msgbox_dailog_mth(msginfo_lst)
                     duplicated = True
                     break
 
@@ -420,7 +432,9 @@ class MyApp(QtWidgets.QWidget):
                         preset.write(str(preset_dict) + "\n")
                     else:
                         # show msg wrning that the user reach the preset limits and he/she must delete one or more preset
-                        msginfo_lst = [QMessageBox.Warning, "Add Preset Warning", "Preset Limite Reach", "you need to delete one or more from your Preset(s) Droplist"]
+                        msginfo_lst = [QMessageBox.Warning, "Add Preset Warning",
+                                       "Preset Limite Reach",
+                                       "you need to delete one or more from your Preset(s) Droplist"]
                         msgbox_dailog_mth(msginfo_lst)
                         limit_reach = True
         except UnboundLocalError:
@@ -487,6 +501,7 @@ class MyApp(QtWidgets.QWidget):
         row = self.ui.tableWidget
         cell = self.ui.tableWidget.item
 
+        # TODO: maybe add warning msgbox before the delete confirm???
         if action == delete_selected_action:
             for index in reversed(range(total_rows)):
                 if cell(index, 0).checkState() == QtCore.Qt.Checked:
