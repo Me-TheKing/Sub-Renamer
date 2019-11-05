@@ -469,7 +469,12 @@ class MyApp(QtWidgets.QWidget):
             line = preset_lst[index - 1]
             # the literal_eval() mth from ast is to convert back the text line from str to dict
             line = ast.literal_eval(line)
-            set_lst = line["Preset info"]
+            # see if the user select the default name or not
+            if index:
+                set_lst = line["Preset info"]
+            else:
+                # make 7 empty space by " "*6, then split them by " "
+                set_lst = (" "*6).split(" ")
 
             # set the preset
             self.ui.name_LE.setText(set_lst[0])
