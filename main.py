@@ -117,10 +117,6 @@ class MyApp(QtWidgets.QWidget):
             if folder_name:
                 os.chdir(folder_name)
                 my_current_dir = os.getcwd()
-                # the filter is easy but give me a an object
-                # so I will use list comprehension version for fast check to see if the folder is empty or not
-                # fileNames = filter(os.path.isfile, os.listdir(my_current_dic))
-                # fileNames = [f for f in os.listdir(my_current_dir) if os.path.isfile(f)] **1**
                 # TODO: make a foldernames var
                 #  I will add the folder(s) name in the tbl and uncheak them by defualt
                 #  and add two contextmenu to select all the rows or unselect all
@@ -128,7 +124,6 @@ class MyApp(QtWidgets.QWidget):
                 #  and see if I can make select files by there exe
 
                 # see if the folder is empty or not
-                # if not fileNames:**2**
                 if len(folder_name) == 0:
                     msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning",
                                    "The Folder is Empty!!",
@@ -139,7 +134,6 @@ class MyApp(QtWidgets.QWidget):
                     cwdpath = my_current_dir.replace("\\", "/")
                     fileNames = []
                     for f_name in os.listdir(my_current_dir):
-                        print(f_name)
                         fileNames.append(f"{cwdpath}/{f_name}")
             else:
                 # if the user cancel the select dialog I have to asign False
@@ -160,7 +154,8 @@ class MyApp(QtWidgets.QWidget):
                     for row in range(self.ui.tableWidget.rowCount()):
                         if name == self.ui.tableWidget.item(row, 3).text():
                             duplicate = True
-                            msginfo_lst = [QMessageBox.Warning, "Duplicate Warning", f"The {QFileInfo(name).fileName()} is in your list!!",
+                            msginfo_lst = [QMessageBox.Warning, "Duplicate Warning",
+                                           f"The {QFileInfo(name).fileName()} is in your list!!",
                                            f"{QFileInfo(name).fileName()} will not be added to your list."]
                             msgbox_dailog_mth(msginfo_lst)
                             break
@@ -188,13 +183,13 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.tableWidget.setItem(row_position, 3, QTableWidgetItem(name))
 
                     # set some option(s) to the item
-                    for a_row in range(row_position + 1):
-                        for a_col in range(self.ui.tableWidget.columnCount()):
-                            if a_col == 0:
-                                self.ui.tableWidget.item(a_row, a_col).setCheckState(Qt.Checked)
+                    if ext_type == "Folder":
+                        self.ui.tableWidget.item(row_position, 0).setCheckState(Qt.Unchecked)
+                    else:
+                        self.ui.tableWidget.item(row_position, 0).setCheckState(Qt.Checked)
 
-                            self.ui.tableWidget.item(a_row, a_col).setFlags(
-                                Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                    self.ui.tableWidget.item(row_position, 0).setFlags(
+                        Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 
                     # resize the columns & rows to fit the text
                     self.ui.tableWidget.resizeColumnsToContents()
