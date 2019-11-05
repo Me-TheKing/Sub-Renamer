@@ -346,13 +346,11 @@ class MyApp(QtWidgets.QWidget):
         model.removeRows(0, model.rowCount())
 
         # clear all the user input(s)
-        self.ui.name_LE.clear()
-        self.ui.serial_LE.clear()
-        self.ui.ext_LE.clear()
-        self.ui.order_LE.clear()
-        self.ui.fansub_LE.clear()
-        self.ui.delay_LE.clear()
-        self.ui.lang_cobox.setCurrentIndex(0)
+        self.set_preset_mth(index=0)
+
+        # set the preset & the log History to the default name
+        self.ui.preset_cobox.setCurrentIndex(0)
+        self.ui.log_cobox.setCurrentIndex(0)
 
         # disable the clear_btn
         self.ui.clear_btn.setEnabled(False)
