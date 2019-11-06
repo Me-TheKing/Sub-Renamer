@@ -119,11 +119,15 @@ class MyApp(QtWidgets.QWidget):
                 my_current_dir = os.getcwd()
 
                 # see if the folder is empty or not
-                if len(folder_name) == 0:
+                if len(os.listdir(folder_name)) == 0:
                     msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning",
                                    "The Folder is Empty!!",
                                    "No File Or Folder will be added."]
                     msgbox_dailog_mth(msginfo_lst)
+
+                    # if the user cancel the select dialog I have to asign False
+                    # or the fileNames will be undefined and the program will crash
+                    fileNames = False
                 else:
                     # make the name(s) in fileNames list look the same as the format from the getOpenFileNames
                     cwdpath = my_current_dir.replace("\\", "/")
@@ -459,6 +463,7 @@ class MyApp(QtWidgets.QWidget):
     def set_preset_mth(self, index):
         # get the name of the combobox from the sender mth
         combobox_name = self.sender().objectName()
+        # set the file_name and rest the other cobox to it's default name
         if combobox_name == "preset_cobox":
             file_name = "userinput.pset"
             if index:
