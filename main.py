@@ -222,6 +222,9 @@ class MyApp(QtWidgets.QWidget):
                 # I can use the QFileInfo but I will leave it as alternative way
                 name = ".".join(a_row(index, 0).text().rsplit(".")[:-1])
                 ext = a_row(index, 0).text().split(".")[-1]
+                if not name:
+                    name = ext
+                    ext = ""
                 # add item(s) to the listview (part02) with the rename option(s)
                 if self.ui.name_LE.text():
                     name = self.ui.name_LE.text()
@@ -242,7 +245,10 @@ class MyApp(QtWidgets.QWidget):
                     name = f"{name}.{self.ui.order_LE.text()}"
 
                 # final step to add the name to the listview
-                item = QtGui.QStandardItem(f"{name}.{ext}")
+                if ext:
+                    item = QtGui.QStandardItem(f"{name}.{ext}")
+                else:
+                    item = QtGui.QStandardItem(f"{name}{ext}")
 
                 # check if this name is duplicated or not
                 # TODO: if the name is duplicated but it's from differnet path
