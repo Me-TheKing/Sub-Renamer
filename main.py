@@ -35,7 +35,7 @@ class MyApp(QtWidgets.QWidget):
         # set Some Var
         self.original_name_lst = []
         self.new_name_lst = []
-        self.tmp_path = "C:\\Users\\H.Ali\\Desktop\\Rename Test\\"
+        self.tmp_path = ""
 
         # set serial_LE, Order_LE, and delay_LE to eccept only Integer numbers
         onlyInt = QIntValidator()
@@ -109,10 +109,10 @@ class MyApp(QtWidgets.QWidget):
         if btn_name == "Add File(s)":
             # TODO: move the option in new var
             #  I will make a var in the __ini__ def that contain the option file exe
-            fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
+            fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", self.tmp_path,
                                                         "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
         else:
-            folder_name = QFileDialog.getExistingDirectory(self, "Select Folder")
+            folder_name = QFileDialog.getExistingDirectory(self, "Select Folder", self.tmp_path)
             # see if the user select a folfe or not
             if folder_name:
                 os.chdir(folder_name)
@@ -349,10 +349,8 @@ class MyApp(QtWidgets.QWidget):
         self.ui.listView.setModel(model)
         model.removeRows(0, model.rowCount())
 
-        # clear all the user input(s)
-        self.set_preset_mth(index=0)
-
         # set the preset & the log History to the default name
+        # to clear all the input fields
         self.ui.preset_cobox.setCurrentIndex(0)
         self.ui.log_cobox.setCurrentIndex(0)
 
