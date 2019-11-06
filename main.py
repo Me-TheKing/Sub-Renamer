@@ -459,7 +459,14 @@ class MyApp(QtWidgets.QWidget):
     def set_preset_mth(self, index):
         # get the name of the combobox from the sender mth
         combobox_name = self.sender().objectName()
-        file_name = "userinput.pset" if combobox_name == "preset_cobox" else "history.pset"
+        if combobox_name == "preset_cobox":
+            file_name = "userinput.pset"
+            if index:
+                self.ui.log_cobox.setCurrentIndex(0)
+        else:
+            file_name = "history.pset"
+            if index:
+                self.ui.preset_cobox.setCurrentIndex(0)
 
         with open(f"{self.tmp_path}{file_name}", "r") as preset:
             # read the preset file and remove the newline char '\n'
