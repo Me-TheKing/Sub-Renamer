@@ -3,11 +3,13 @@ import datetime
 import os
 import sys
 import time
+import traceback
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QFileInfo, Qt
-from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox
+from PyQt5.QtCore import QFileInfo, Qt, QVariant, QSize
+from PyQt5.QtGui import QIntValidator, QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox, QAction, QStyle, \
+    QPushButton, QTreeView, QTableView
 
 from UI.maingui import Ui_Form  # importing our generated file
 
@@ -31,6 +33,10 @@ class MyApp(QtWidgets.QWidget):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+
+        # set mouse tracking
+        # self.setMouseTracking(True)
+        # self.ui.preset_cobox.setMouseTracking(True)
 
         # set Some Var
         self.original_name_lst = []
@@ -449,16 +455,26 @@ class MyApp(QtWidgets.QWidget):
             # first know which combobox is called and save it name in cobox_name var
             cobox_name = self.ui.preset_cobox if file_name == "userinput.pset" else self.ui.log_cobox
 
-            # clear the combobox before add the new preset
-            for i in range(cobox_name.count(), 0, -1):
+            # clear the combobox before add the new preset, from down to up
+            for i in range(cobox_name.count(), 1, -1):
                 cobox_name.removeItem(i)
 
             # add preset name to the combobox
             with open(f"{self.tmp_path}{file_name}", "r") as preset:
-                for line in preset.readlines():
+                for i, line in enumerate(preset.readlines()):
                     # the literal_eval() mth from ast is to convert back the text line from str to dict
                     line = ast.literal_eval(line)
+                    # colour = QtGui.QPixmap(16, 16)
+                    # colour.fill(QtGui.QColor("red"))
+                    # x_icon = self.style().standardIcon(getattr(QStyle, "SP_MessageBoxCritical"))
+                    # # cobox_name.addItem(x_icon, line["Preset Name"])
+                    # my_LE = QtWidgets.QLineEdit()
+                    # # my_LE.setClearButtonEnabled(True)
+                    # action = my_LE.addAction(QtGui.QIcon(x_icon), QLineEdit.TrailingPosition)
+                    # action.triggered.connect(self.del_preset_mth)
+                    # cobox_name.setLineEdit(my_LE)
                     cobox_name.addItem(line["Preset Name"])
+
         except FileNotFoundError:
             # only creat the file if it not exists
             with open(f"{self.tmp_path}{file_name}", "x"):
@@ -486,7 +502,25 @@ class MyApp(QtWidgets.QWidget):
             # see if the user select the default name or not
             if index:
                 set_lst = line["Preset info"]
+                try:
+                    x_icon = self.style().standardIcon(getattr(QStyle, "SP_MessageBoxCritical"))
+                    my_LE = QtWidgets.QLineEdit()
+                    action = my_LE.addAction(QtGui.QIcon(x_icon), QLineEdit.TrailingPosition)
+                    action.triggered.connect(self.del_preset_mth)
+
+                    if combobox_name == "preset_cobox":
+                        self.ui.preset_cobox.setLineEdit(my_LE)
+                    else:
+                        self.ui.log_cobox.setLineEdit(my_LE)
+
+                except Exception as ex:
+                    traceback.print_exception(type(ex), ex, ex.__traceback__)
             else:
+                my_LE = QtWidgets.QLineEdit()
+                if combobox_name == "preset_cobox":
+                    self.ui.preset_cobox.setLineEdit(my_LE)
+                else:
+                    self.ui.log_cobox.setLineEdit(my_LE)
                 # make 7 empty space by " "*6, then split them by " "
                 set_lst = (" "*6).split(" ")
 
@@ -498,6 +532,9 @@ class MyApp(QtWidgets.QWidget):
             self.ui.fansub_LE.setText(set_lst[4])
             self.ui.delay_LE.setText(set_lst[5])
             self.ui.lang_cobox.setCurrentText(set_lst[6])
+
+    def del_preset_mth(self):
+        print("test")
 
     def on_customContextMenuRequested(self, pos):
         # TODO: add two contextmenu to select all the rows or unselect all
@@ -520,14 +557,14 @@ class MyApp(QtWidgets.QWidget):
 
         # TODO: maybe add warning msgbox before the delete confirm???
         if action == delete_selected_action:
-            for index in reversed(range(total_rows)):
-                if cell(index, 0).checkState() == QtCore.Qt.Checked:
-                    row.removeRow(index)
+            check_state = QtCore.Qt.Checked
 
         if action == delete_unselected_action:
-            for index in reversed(range(total_rows)):
-                if cell(index, 0).checkState() != QtCore.Qt.Checked:
-                    row.removeRow(index)
+            check_state = QtCore.Qt.Unchecked
+
+        for index in reversed(range(total_rows)):
+            if cell(index, 0).checkState() == check_state:
+                row.removeRow(index)
 
         # update the listview after the delete
         self.preview_mth()
