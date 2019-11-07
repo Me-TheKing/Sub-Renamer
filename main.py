@@ -6,10 +6,9 @@ import time
 import traceback
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QFileInfo, Qt, QVariant, QSize
-from PyQt5.QtGui import QIntValidator, QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox, QAction, QStyle, \
-    QPushButton, QTreeView, QTableView
+from PyQt5.QtCore import QFileInfo, Qt
+from PyQt5.QtGui import QIntValidator
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox, QStyle
 
 from UI.maingui import Ui_Form  # importing our generated file
 
@@ -464,15 +463,6 @@ class MyApp(QtWidgets.QWidget):
                 for i, line in enumerate(preset.readlines()):
                     # the literal_eval() mth from ast is to convert back the text line from str to dict
                     line = ast.literal_eval(line)
-                    # colour = QtGui.QPixmap(16, 16)
-                    # colour.fill(QtGui.QColor("red"))
-                    # x_icon = self.style().standardIcon(getattr(QStyle, "SP_MessageBoxCritical"))
-                    # # cobox_name.addItem(x_icon, line["Preset Name"])
-                    # my_LE = QtWidgets.QLineEdit()
-                    # # my_LE.setClearButtonEnabled(True)
-                    # action = my_LE.addAction(QtGui.QIcon(x_icon), QLineEdit.TrailingPosition)
-                    # action.triggered.connect(self.del_preset_mth)
-                    # cobox_name.setLineEdit(my_LE)
                     cobox_name.addItem(line["Preset Name"])
 
         except FileNotFoundError:
@@ -505,6 +495,7 @@ class MyApp(QtWidgets.QWidget):
                 try:
                     x_icon = self.style().standardIcon(getattr(QStyle, "SP_MessageBoxCritical"))
                     my_LE = QtWidgets.QLineEdit()
+                    my_LE.setReadOnly(True)
                     action = my_LE.addAction(QtGui.QIcon(x_icon), QLineEdit.TrailingPosition)
                     action.triggered.connect(self.del_preset_mth)
 
@@ -516,11 +507,11 @@ class MyApp(QtWidgets.QWidget):
                 except Exception as ex:
                     traceback.print_exception(type(ex), ex, ex.__traceback__)
             else:
-                my_LE = QtWidgets.QLineEdit()
                 if combobox_name == "preset_cobox":
-                    self.ui.preset_cobox.setLineEdit(my_LE)
+                    self.ui.preset_cobox.setEditable(False)
                 else:
-                    self.ui.log_cobox.setLineEdit(my_LE)
+                    self.ui.log_cobox.setEditable(False)
+
                 # make 7 empty space by " "*6, then split them by " "
                 set_lst = (" "*6).split(" ")
 
