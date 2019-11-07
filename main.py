@@ -549,10 +549,11 @@ class MyApp(QtWidgets.QWidget):
         # TODO: maybe add warning msgbox before the delete confirm???
         if action == delete_selected_action:
             check_state = QtCore.Qt.Checked
-
-        if action == delete_unselected_action:
+        elif action == delete_unselected_action:
             check_state = QtCore.Qt.Unchecked
-
+        else:
+            check_state = None
+        
         for index in reversed(range(total_rows)):
             if cell(index, 0).checkState() == check_state:
                 row.removeRow(index)
