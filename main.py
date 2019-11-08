@@ -34,6 +34,7 @@ class MyApp(QtWidgets.QWidget):
         # set btn icon
         self.ui.erase_btn.setIcon(QIcon("icons/eraser_on.png"))
         self.ui.x_btn.setIcon(QIcon("icons/delete_on.ico"))
+        self.ui.addfolder_btn.setIcon(QIcon("icons/add_folder.png"))
 
         # set Some Var
         self.original_name_lst = []
