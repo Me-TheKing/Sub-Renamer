@@ -34,7 +34,11 @@ class MyApp(QtWidgets.QWidget):
         # set btn icon
         self.ui.erase_btn.setIcon(QIcon("icons/eraser_on.png"))
         self.ui.x_btn.setIcon(QIcon("icons/delete_on.ico"))
+        # Icon Farm-fresh made by FatCow Web Hosting from www.iconfinder.com
+        # https://www.iconfinder.com/icons/36060/add_folder_icon
         self.ui.addfolder_btn.setIcon(QIcon("icons/add_folder.png"))
+        # https://www.iconfinder.com/icons/36242/add_page_icon
+        self.ui.addfile_btn.setIcon(QIcon("icons/add_file.png"))
 
         # set Some Var
         self.original_name_lst = []
