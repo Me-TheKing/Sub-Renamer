@@ -368,11 +368,7 @@ class MyApp(QtWidgets.QWidget):
         model.removeRows(0, model.rowCount())
 
         # to clear all the input fields
-        self.set_fields_mth("erase")
-
-        # set the cobox to there default value
-        self.ui.preset_cobox.setCurrentIndex(0)
-        self.ui.log_cobox.setCurrentIndex(0)
+        self.set_fields_mth("erase")        
 
         # disable the clear_btn
         self.ui.clear_btn.setEnabled(False)
@@ -381,6 +377,10 @@ class MyApp(QtWidgets.QWidget):
         # make 7 empty space by " "*6, then split them by " "
         if set_lst == "erase":
             set_lst = (" " * 6).split(" ")
+            
+            # set the cobox to there default value
+            self.ui.preset_cobox.setCurrentIndex(0)
+            self.ui.log_cobox.setCurrentIndex(0)
 
         # set the preset
         self.ui.name_LE.setText(set_lst[0])
