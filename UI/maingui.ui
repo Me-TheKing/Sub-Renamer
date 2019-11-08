@@ -31,16 +31,42 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="preset_cobox">
-       <property name="maxVisibleItems">
-        <number>11</number>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <property name="spacing">
+        <number>0</number>
        </property>
        <item>
-        <property name="text">
-         <string>Preset(s)</string>
-        </property>
+        <widget class="QComboBox" name="preset_cobox">
+         <property name="maxVisibleItems">
+          <number>11</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Preset(s)</string>
+          </property>
+         </item>
+        </widget>
        </item>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="x_btn">
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Delete the seleceted preset.</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QComboBox" name="log_cobox">
@@ -87,9 +113,6 @@
          <height>16777215</height>
         </size>
        </property>
-       <property name="text">
-        <string/>
-       </property>
        <property name="maxLength">
         <number>6</number>
        </property>
@@ -112,12 +135,6 @@
          <width>50</width>
          <height>16777215</height>
         </size>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="maxLength">
-        <number>6</number>
        </property>
        <property name="placeholderText">
         <string>mkv,exe</string>
@@ -180,9 +197,6 @@
          <height>16777215</height>
         </size>
        </property>
-       <property name="text">
-        <string/>
-       </property>
        <property name="maxLength">
         <number>8</number>
        </property>
@@ -223,6 +237,25 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="erase_btn">
+       <property name="maximumSize">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Delete the seleceted preset.</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="addpreset_btn">
        <property name="text">
         <string>Add Preset</string>
@@ -246,16 +279,10 @@
          <property name="text">
           <string>Original Name(s):</string>
          </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
         </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="date_chbox">
-         <property name="contextMenuPolicy">
-          <enum>Qt::NoContextMenu</enum>
-         </property>
          <property name="text">
           <string>Date</string>
          </property>
@@ -292,9 +319,6 @@
        <property name="text">
         <string>New Name(s):</string>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
        <property name="margin">
         <number>2</number>
        </property>
@@ -311,6 +335,13 @@
    </item>
    <item row="4" column="0" colspan="2">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="clear_btn">
+       <property name="text">
+        <string>Clear Lists</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QPushButton" name="rename_btn">
        <property name="text">
@@ -322,13 +353,6 @@
       <widget class="QPushButton" name="unrename_btn">
        <property name="text">
         <string>UnRename</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="clear_btn">
-       <property name="text">
-        <string>Clear Lists</string>
        </property>
       </widget>
      </item>
