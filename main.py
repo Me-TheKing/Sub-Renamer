@@ -7,7 +7,7 @@ import traceback
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QFileInfo, Qt
-from PyQt5.QtGui import QIntValidator
+from PyQt5.QtGui import QIntValidator, QIcon
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox, QStyle
 
 from UI.maingui import Ui_Form  # importing our generated file
@@ -20,9 +20,7 @@ def msgbox_dailog_mth(msginfo_lst):
     msg.setWindowTitle(msginfo_lst[1])
     msg.setText(msginfo_lst[2])
     msg.setInformativeText(msginfo_lst[3])
-    # msg.setDetailedText("The details are as follows:")
     msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-    # msg.buttonClicked.connect(msgbtn)
     msg.exec_()
 
 
@@ -33,9 +31,9 @@ class MyApp(QtWidgets.QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
-        # set mouse tracking
-        # self.setMouseTracking(True)
-        # self.ui.preset_cobox.setMouseTracking(True)
+        # set btn icon
+        self.ui.erase_btn.setIcon(QIcon("icons/eraser_on.png"))
+        self.ui.x_btn.setIcon(QIcon("icons/delete_on.ico"))
 
         # set Some Var
         self.original_name_lst = []
@@ -66,6 +64,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.rename_btn.setEnabled(False)
         self.ui.unrename_btn.setEnabled(False)
         self.ui.clear_btn.setEnabled(False)
+        self.ui.erase_btn.setEnabled(False)
 
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
@@ -76,6 +75,9 @@ class MyApp(QtWidgets.QWidget):
         self.ui.unrename_btn.clicked.connect(self.unrename_mth)
         self.ui.preset_cobox.currentIndexChanged.connect(self.set_preset_mth)
         self.ui.log_cobox.currentIndexChanged.connect(self.set_preset_mth)
+        # call icon btn mth
+        self.ui.erase_btn.clicked.connect(lambda set_lst: self.set_fields_mth("erase"))
+        self.ui.x_btn.clicked.connect(self.del_preset_mth)
         # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
@@ -278,9 +280,14 @@ class MyApp(QtWidgets.QWidget):
         if userfield_len == 0 or unchecked == total_row:
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
+            self.ui.erase_btn.setEnabled(False)
         elif total_row > 0:
             self.ui.rename_btn.setEnabled(True)
             self.ui.addpreset_btn.setEnabled(True)
+
+        # enable only the erase_btn if the user input anything in any field
+        if userfield_len > 0:
+            self.ui.erase_btn.setEnabled(True)
 
         # to make sur the row(s) and column(s) size same as the contents
         self.ui.tableWidget.resizeColumnsToContents()
@@ -360,13 +367,29 @@ class MyApp(QtWidgets.QWidget):
         self.ui.listView.setModel(model)
         model.removeRows(0, model.rowCount())
 
-        # set the preset & the log History to the default name
         # to clear all the input fields
+        self.set_fields_mth("erase")
+
+        # set the cobox to there default value
         self.ui.preset_cobox.setCurrentIndex(0)
         self.ui.log_cobox.setCurrentIndex(0)
 
         # disable the clear_btn
         self.ui.clear_btn.setEnabled(False)
+
+    def set_fields_mth(self, set_lst):
+        # make 7 empty space by " "*6, then split them by " "
+        if set_lst == "erase":
+            set_lst = (" " * 6).split(" ")
+
+        # set the preset
+        self.ui.name_LE.setText(set_lst[0])
+        self.ui.serial_LE.setText(set_lst[1])
+        self.ui.ext_LE.setText(set_lst[2])
+        self.ui.order_LE.setText(set_lst[3])
+        self.ui.fansub_LE.setText(set_lst[4])
+        self.ui.delay_LE.setText(set_lst[5])
+        self.ui.lang_cobox.setCurrentText(set_lst[6])
 
     def hide_unhide_col(self):
 
@@ -492,37 +515,12 @@ class MyApp(QtWidgets.QWidget):
             # see if the user select the default name or not
             if index:
                 set_lst = line["Preset info"]
-                try:
-                    x_icon = self.style().standardIcon(getattr(QStyle, "SP_MessageBoxCritical"))
-                    my_LE = QtWidgets.QLineEdit()
-                    my_LE.setReadOnly(True)
-                    action = my_LE.addAction(QtGui.QIcon(x_icon), QLineEdit.TrailingPosition)
-                    action.triggered.connect(self.del_preset_mth)
-
-                    if combobox_name == "preset_cobox":
-                        self.ui.preset_cobox.setLineEdit(my_LE)
-                    else:
-                        self.ui.log_cobox.setLineEdit(my_LE)
-
-                except Exception as ex:
-                    traceback.print_exception(type(ex), ex, ex.__traceback__)
             else:
-                if combobox_name == "preset_cobox":
-                    self.ui.preset_cobox.setEditable(False)
-                else:
-                    self.ui.log_cobox.setEditable(False)
-
                 # make 7 empty space by " "*6, then split them by " "
-                set_lst = (" "*6).split(" ")
+                set_lst = "erase"
 
             # set the preset
-            self.ui.name_LE.setText(set_lst[0])
-            self.ui.serial_LE.setText(set_lst[1])
-            self.ui.ext_LE.setText(set_lst[2])
-            self.ui.order_LE.setText(set_lst[3])
-            self.ui.fansub_LE.setText(set_lst[4])
-            self.ui.delay_LE.setText(set_lst[5])
-            self.ui.lang_cobox.setCurrentText(set_lst[6])
+            self.set_fields_mth(set_lst)
 
     def del_preset_mth(self):
         print("test")
