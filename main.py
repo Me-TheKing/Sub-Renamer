@@ -70,6 +70,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.unrename_btn.setEnabled(False)
         self.ui.clear_btn.setEnabled(False)
         self.ui.erase_btn.setEnabled(False)
+        self.ui.x_btn.setEnabled(False)
 
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.addfile_mth)
@@ -520,8 +521,10 @@ class MyApp(QtWidgets.QWidget):
             # see if the user select the default name or not
             if index:
                 set_lst = line["Preset info"]
+                if combobox_name == "preset_cobox":
+                    self.ui.x_btn.setEnabled(True)
             else:
-                # make 7 empty space by " "*6, then split them by " "
+                self.ui.x_btn.setEnabled(False)
                 set_lst = "erase"
 
             # set the preset
