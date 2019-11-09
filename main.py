@@ -34,7 +34,7 @@ class MyApp(QtWidgets.QWidget):
         # set btn icon
         # https://icons8.com/icon/46514/eraser
         self.ui.erase_btn.setIcon(QIcon("icons/eraser_on.png"))
-        self.ui.x_btn.setIcon(QIcon("icons/delete_on.ico"))
+        self.ui.x_btn.setIcon(QIcon("icons/delete_on.png"))
         # Icon Farm-fresh made by FatCow Web Hosting from www.iconfinder.com
         # https://www.iconfinder.com/icons/36060/add_folder_icon
         self.ui.addfolder_btn.setIcon(QIcon("icons/add_folder.png"))
@@ -117,8 +117,8 @@ class MyApp(QtWidgets.QWidget):
         return [nameLE, serialLE, extLE, orderLE, fansubLE, delayLE, langCobox]
 
     def eventFilter(self, a0: 'QObject', a1: 'QEvent') -> bool:
-        # 10 mean the mouse Hover the btn
-        if a1.type() == 10 and self.ui.preset_cobox.currentIndex():
+        # 10 mean the mouse Hover the btn and 3 mean the btn is released
+        if a1.type() in (10, 3) and self.ui.preset_cobox.currentIndex():
             self.ui.x_btn.setIconSize(QSize(20, 20))
         # 11 mean the mouse Leaved the btn
         elif a1.type() == 11:
@@ -126,9 +126,6 @@ class MyApp(QtWidgets.QWidget):
         # 2 mean the btn is clicked
         elif a1.type() == 2 and self.ui.preset_cobox.currentIndex():
             self.ui.x_btn.setIconSize(QSize(14, 14))
-        # 3 mean the btn is released
-        elif a1.type() == 3:
-            self.ui.x_btn.setIconSize(QSize(20, 20))
 
         return False
 
@@ -549,7 +546,16 @@ class MyApp(QtWidgets.QWidget):
             self.set_fields_mth(set_lst)
 
     def del_preset_mth(self):
-        print("test")
+        index = self.ui.preset_cobox.currentIndex()
+        if index:
+            self.ui.preset_cobox.removeItem(index)
+            with open("userinput.pset", "r+") as pset_file:
+                pset_lst = pset_file.readlines()
+                del pset_lst[index-1]  # delete the first line
+                pset_file.seek(0)  # start from the first line
+                pset_file.truncate()  # clear the file
+                pset_file.writelines(pset_lst)  # add the rest of the lines to the file from the top
+
 
     def on_customContextMenuRequested(self, pos):
         # TODO: add two contextmenu to select all the rows or unselect all
