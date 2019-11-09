@@ -6,7 +6,7 @@ import time
 import traceback
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QFileInfo, Qt
+from PyQt5.QtCore import QFileInfo, Qt, QSize
 from PyQt5.QtGui import QIntValidator, QIcon
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox, QStyle
 
@@ -32,6 +32,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.setupUi(self)
 
         # set btn icon
+        # https://icons8.com/icon/46514/eraser
         self.ui.erase_btn.setIcon(QIcon("icons/eraser_on.png"))
         self.ui.x_btn.setIcon(QIcon("icons/delete_on.ico"))
         # Icon Farm-fresh made by FatCow Web Hosting from www.iconfinder.com
@@ -84,6 +85,7 @@ class MyApp(QtWidgets.QWidget):
         # call icon btn mth
         self.ui.erase_btn.clicked.connect(lambda set_lst: self.set_fields_mth("erase"))
         self.ui.x_btn.clicked.connect(self.del_preset_mth)
+        self.ui.x_btn.installEventFilter(self)
         # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
@@ -113,6 +115,22 @@ class MyApp(QtWidgets.QWidget):
         langCobox = self.ui.lang_cobox.currentText()
 
         return [nameLE, serialLE, extLE, orderLE, fansubLE, delayLE, langCobox]
+
+    def eventFilter(self, a0: 'QObject', a1: 'QEvent') -> bool:
+        # 10 mean the mouse Hover the btn
+        if a1.type() == 10 and self.ui.preset_cobox.currentIndex():
+            self.ui.x_btn.setIconSize(QSize(20, 20))
+        # 11 mean the mouse Leaved the btn
+        elif a1.type() == 11:
+            self.ui.x_btn.setIconSize(QSize(16, 16))
+        # 2 mean the btn is clicked
+        elif a1.type() == 2 and self.ui.preset_cobox.currentIndex():
+            self.ui.x_btn.setIconSize(QSize(14, 14))
+        # 3 mean the btn is released
+        elif a1.type() == 3:
+            self.ui.x_btn.setIconSize(QSize(20, 20))
+
+        return False
 
     def addfile_mth(self):
         # read the btn name
