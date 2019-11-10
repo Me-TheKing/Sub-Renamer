@@ -55,8 +55,8 @@ class MyApp(QtWidgets.QWidget):
         # call the all the method(s)
         self.hide_unhide_col()
         self.btn_handler()
-        self.preset_history_cobox_mth("userinput.pset")
-        self.preset_history_cobox_mth("history.pset")
+        self.add_item_to_cobox_mth("userinput.pset")
+        self.add_item_to_cobox_mth("history.pset")
 
         # setup table widget and Column(s)
         self.ui.tableWidget.setColumnCount(4)
@@ -74,14 +74,14 @@ class MyApp(QtWidgets.QWidget):
         self.ui.x_btn.setEnabled(False)
 
     def btn_handler(self):
-        self.ui.addfile_btn.clicked.connect(self.addfile_mth)
-        self.ui.addfolder_btn.clicked.connect(self.addfile_mth)
-        self.ui.addpreset_btn.clicked.connect(lambda file_name: self.addpreset_history_mth("userinput.pset"))
+        self.ui.addfile_btn.clicked.connect(self.add_file_or_filder_btn_mth)
+        self.ui.addfolder_btn.clicked.connect(self.add_file_or_filder_btn_mth)
+        self.ui.addpreset_btn.clicked.connect(lambda file_name: self.add_preset_to_pset_file_mth("userinput.pset"))
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         self.ui.unrename_btn.clicked.connect(self.unrename_mth)
-        self.ui.preset_cobox.currentIndexChanged.connect(self.set_preset_mth)
-        self.ui.log_cobox.currentIndexChanged.connect(self.set_preset_mth)
+        self.ui.preset_cobox.currentIndexChanged.connect(self.get_preset_txt_from_pset_file_mth)
+        self.ui.log_cobox.currentIndexChanged.connect(self.get_preset_txt_from_pset_file_mth)
         # call icon btn mth
         self.ui.erase_btn.clicked.connect(lambda set_lst: self.set_fields_mth("erase"))
         self.ui.x_btn.clicked.connect(self.del_preset_mth)
@@ -105,7 +105,7 @@ class MyApp(QtWidgets.QWidget):
         # call the sort column if the user click the column header
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
-    def userinput_mth(self):
+    def get_fildes_txt_mth(self):
         nameLE = self.ui.name_LE.text()
         serialLE = self.ui.serial_LE.text()
         extLE = self.ui.ext_LE.text()
@@ -129,7 +129,7 @@ class MyApp(QtWidgets.QWidget):
 
         return False
 
-    def addfile_mth(self):
+    def add_file_or_filder_btn_mth(self):
         # read the btn name
         btn_name = self.sender().text()
 
@@ -297,7 +297,7 @@ class MyApp(QtWidgets.QWidget):
 
         # this code is just to enable the addpreset_btn & rename_btn
         # first join the string from the return list then get the length
-        userfield_len = len("".join(self.userinput_mth()))
+        userfield_len = len("".join(self.get_fildes_txt_mth()))
         if userfield_len == 0 or unchecked == total_row:
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
@@ -359,7 +359,7 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.unrename_btn.setEnabled(True)
 
                     # save the userinput in history.pset file
-                    self.addpreset_history_mth("history.pset")
+                    self.add_preset_to_pset_file_mth("history.pset")
 
                     # TODO: see if you want this else or not????
                 else:
@@ -439,15 +439,15 @@ class MyApp(QtWidgets.QWidget):
 
         self.preview_mth()
 
-    def addpreset_history_mth(self, file_name):
-        # call the userinput_mth to collecate the user input information
-        userinput_info_lst = self.userinput_mth()
+    def add_preset_to_pset_file_mth(self, file_name):
+        # call the get_fildes_txt_mth to collecate the user input information
+        user_fildes_txt_lst = self.get_fildes_txt_mth()
 
         # the full date
         full_date = datetime.datetime.now()
         # if there is no text in the name_LE I wll creat a default name by the date
         if file_name == "userinput.pset":
-            default_name = userinput_info_lst[0] if len(userinput_info_lst[0]) != 0 else "Preset " + full_date.strftime(
+            default_name = user_fildes_txt_lst[0] if len(user_fildes_txt_lst[0]) != 0 else "Preset " + full_date.strftime(
                 "%d-%m-%y_%H-%M")
         else:
             # I will allways create preset name by the date for the history.pset names
@@ -464,11 +464,11 @@ class MyApp(QtWidgets.QWidget):
                     if file_name == "userinput.pset":
                         preset_name = self.get_preset_name_mth(default_name)
                         if preset_name:
-                            preset_dict = {"Preset Name": preset_name, "Preset info": userinput_info_lst}
+                            preset_dict = {"Preset Name": preset_name, "Preset info": user_fildes_txt_lst}
                     else:
-                        preset_dict = {"Preset Name": default_name, "Preset info": userinput_info_lst}
+                        preset_dict = {"Preset Name": default_name, "Preset info": user_fildes_txt_lst}
 
-                    # this will rise error if the above if didn't defined the preset_dict
+                    # this will rise error if the above IF didn't defined the preset_dict
                     preset.write(str(preset_dict) + "\n")
                 else:
                     # update history.pset by deleting the first preset and shift all the lines up then add the new preset
@@ -478,7 +478,7 @@ class MyApp(QtWidgets.QWidget):
                         preset.truncate()  # clear the file
                         preset.writelines(pset_lst)  # add the rest of the lines to the file from the top
                         # insert the new line in the bottom
-                        preset_dict = {"Preset Name": default_name, "Preset info": userinput_info_lst}
+                        preset_dict = {"Preset Name": default_name, "Preset info": user_fildes_txt_lst}
                         preset.write(str(preset_dict) + "\n")
                     else:
                         # show msg wrning that the user reach the preset limits and he/she must delete one or more preset
@@ -491,15 +491,20 @@ class MyApp(QtWidgets.QWidget):
             preset.close()
         else:
             if not limit_reach:
-                self.preset_history_cobox_mth(file_name)
+                self.add_item_to_cobox_mth(file_name)
 
-    def preset_history_cobox_mth(self, file_name):
+                # set the selected item in the preset_cobox to the last added preset
+                if file_name == "userinput.pset":
+                    last_preset_added = self.ui.preset_cobox.count() - 1
+                    self.ui.preset_cobox.setCurrentIndex(last_preset_added)
+
+    def add_item_to_cobox_mth(self, file_name):
         try:
-            # first know which combobox is called and save it name in cobox_name var
+            # first know which combobox is called and save it's name in cobox_name var
             cobox_name = self.ui.preset_cobox if file_name == "userinput.pset" else self.ui.log_cobox
 
             # clear the combobox before add the new preset, from down to up
-            for i in range(cobox_name.count(), 1, -1):
+            for i in range(cobox_name.count(), 0, -1):
                 cobox_name.removeItem(i)
 
             # add preset name to the combobox
@@ -514,7 +519,7 @@ class MyApp(QtWidgets.QWidget):
             with open(f"{self.tmp_path}{file_name}", "x"):
                 pass
 
-    def set_preset_mth(self, index):
+    def get_preset_txt_from_pset_file_mth(self, index):
         # get the name of the combobox from the sender mth
         combobox_name = self.sender().objectName()
         # set the file_name and rest the other cobox to it's default name
@@ -542,7 +547,7 @@ class MyApp(QtWidgets.QWidget):
                 self.ui.x_btn.setEnabled(False)
                 set_lst = "erase"
 
-            # set the preset
+            # set the preset txt to the fields
             self.set_fields_mth(set_lst)
 
     def del_preset_mth(self):
