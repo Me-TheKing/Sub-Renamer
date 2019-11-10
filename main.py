@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEd
 from UI.maingui import Ui_Form  # importing our generated file
 
 
-def msgbox_dailog_mth(msginfo_lst):
+def msgbox_dailog_func(msginfo_lst):
     msg = QMessageBox()
     msg.setIcon(msginfo_lst[0])
 
@@ -22,6 +22,13 @@ def msgbox_dailog_mth(msginfo_lst):
     msg.setInformativeText(msginfo_lst[3])
     msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
     msg.exec_()
+
+
+def del_line_in_pset_file_func(pset_lst, pset_file, index=0):
+    del pset_lst[index]  # delete the first line
+    pset_file.seek(0)  # start from the first line
+    pset_file.truncate()  # clear the file
+    pset_file.writelines(pset_lst)  # add the rest of the lines to the file from the top
 
 
 class MyApp(QtWidgets.QWidget):
@@ -101,7 +108,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.tableWidget.itemChanged.connect(self.reset_sort)
         # add a custom ContextMenu to the qTableWidget
         self.ui.tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
+        self.ui.tableWidget.customContextMenuRequested.connect(self.context_menu_mth)
         # call the sort column if the user click the column header
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
@@ -151,7 +158,7 @@ class MyApp(QtWidgets.QWidget):
                     msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning",
                                    "The Folder is Empty!!",
                                    "No File Or Folder will be added."]
-                    msgbox_dailog_mth(msginfo_lst)
+                    msgbox_dailog_func(msginfo_lst)
 
                     # if the user cancel the select dialog I have to asign False
                     # or the fileNames will be undefined and the program will crash
@@ -184,7 +191,7 @@ class MyApp(QtWidgets.QWidget):
                             msginfo_lst = [QMessageBox.Warning, "Duplicate Warning",
                                            f"The {QFileInfo(name).fileName()} is in your list!!",
                                            f"{QFileInfo(name).fileName()} will not be added to your list."]
-                            msgbox_dailog_mth(msginfo_lst)
+                            msgbox_dailog_func(msginfo_lst)
                             break
 
                 # adding the name to the table if it not there before
@@ -333,7 +340,7 @@ class MyApp(QtWidgets.QWidget):
                     msginfo_lst = [QMessageBox.Warning, "Duplicate Warning",
                                    "You Have One Or More Duplicated Name!!",
                                    "Please Check Your Name(s) List, and Try Again."]
-                    msgbox_dailog_mth(msginfo_lst)
+                    msgbox_dailog_func(msginfo_lst)
                     duplicated = True
                     break
 
@@ -473,10 +480,8 @@ class MyApp(QtWidgets.QWidget):
                 else:
                     # update history.pset by deleting the first preset and shift all the lines up then add the new preset
                     if file_name == "history.pset":
-                        del pset_lst[0]  # delete the first line
-                        preset.seek(0)  # start from the first line
-                        preset.truncate()  # clear the file
-                        preset.writelines(pset_lst)  # add the rest of the lines to the file from the top
+                        # delete the first line
+                        del_line_in_pset_file_func(pset_lst, preset)
                         # insert the new line in the bottom
                         preset_dict = {"Preset Name": default_name, "Preset info": user_fildes_txt_lst}
                         preset.write(str(preset_dict) + "\n")
@@ -485,7 +490,7 @@ class MyApp(QtWidgets.QWidget):
                         msginfo_lst = [QMessageBox.Warning, "Add Preset Warning",
                                        "Preset Limite Reach",
                                        "you need to delete one or more from your Preset(s) Droplist"]
-                        msgbox_dailog_mth(msginfo_lst)
+                        msgbox_dailog_func(msginfo_lst)
                         limit_reach = True
         except UnboundLocalError:
             preset.close()
@@ -556,13 +561,9 @@ class MyApp(QtWidgets.QWidget):
             self.ui.preset_cobox.removeItem(index)
             with open("userinput.pset", "r+") as pset_file:
                 pset_lst = pset_file.readlines()
-                del pset_lst[index-1]  # delete the first line
-                pset_file.seek(0)  # start from the first line
-                pset_file.truncate()  # clear the file
-                pset_file.writelines(pset_lst)  # add the rest of the lines to the file from the top
+                del_line_in_pset_file_func(pset_lst, pset_file, index - 1)
 
-
-    def on_customContextMenuRequested(self, pos):
+    def context_menu_mth(self, pos):
         # TODO: add two contextmenu to select all the rows or unselect all
         #  and maybe select folder name only or select file name only
         #  and see if I can make select files by there exe
