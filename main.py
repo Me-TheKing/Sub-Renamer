@@ -112,7 +112,7 @@ class MyApp(QtWidgets.QWidget):
         # call the sort column if the user click the column header
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
-    def get_fildes_txt_mth(self):
+    def get_fields_txt_mth(self):
         nameLE = self.ui.name_LE.text()
         serialLE = self.ui.serial_LE.text()
         extLE = self.ui.ext_LE.text()
@@ -304,7 +304,7 @@ class MyApp(QtWidgets.QWidget):
 
         # this code is just to enable the addpreset_btn & rename_btn
         # first join the string from the return list then get the length
-        userfield_len = len("".join(self.get_fildes_txt_mth()))
+        userfield_len = len("".join(self.get_fields_txt_mth()))
         if userfield_len == 0 or unchecked == total_row:
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
@@ -447,8 +447,8 @@ class MyApp(QtWidgets.QWidget):
         self.preview_mth()
 
     def add_preset_to_pset_file_mth(self, file_name):
-        # call the get_fildes_txt_mth to collecate the user input information
-        user_fildes_txt_lst = self.get_fildes_txt_mth()
+        # call the get_fields_txt_mth to collecate the user input information
+        user_fildes_txt_lst = self.get_fields_txt_mth()
 
         # the full date
         full_date = datetime.datetime.now()
@@ -469,7 +469,7 @@ class MyApp(QtWidgets.QWidget):
                 if len(pset_lst) < 10:
                     # if the user want to save the preset a QDailoginput will ask him for the name
                     if file_name == "userinput.pset":
-                        preset_name = self.get_preset_name_mth(default_name)
+                        preset_name = self.get_preset_name_dialog(default_name)
                         if preset_name:
                             preset_dict = {"Preset Name": preset_name, "Preset info": user_fildes_txt_lst}
                     else:
@@ -563,6 +563,9 @@ class MyApp(QtWidgets.QWidget):
                 pset_lst = pset_file.readlines()
                 del_line_in_pset_file_func(pset_lst, pset_file, index - 1)
 
+            # set the fields to the item above the deleted item
+            self.ui.preset_cobox.setCurrentIndex(index-1)
+
     def context_menu_mth(self, pos):
         # TODO: add two contextmenu to select all the rows or unselect all
         #  and maybe select folder name only or select file name only
@@ -601,7 +604,7 @@ class MyApp(QtWidgets.QWidget):
         if self.ui.tableWidget.rowCount() == 0:
             self.ui.clear_btn.setEnabled(False)
 
-    def get_preset_name_mth(self, preset_name):
+    def get_preset_name_dialog(self, preset_name):
         text, okPressed = QInputDialog.getText(self, "Get Preset Name", "Your Preset name:", QLineEdit.Normal,
                                                preset_name)
         if okPressed and text != '':
