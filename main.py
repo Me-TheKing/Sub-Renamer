@@ -519,6 +519,10 @@ class MyApp(QtWidgets.QWidget):
 
                 # set the selected item in the preset_cobox to the last added preset
                 if file_name == "userinput.pset":
+                    # set the log_cobox to default
+                    # before I set the selected item in the preset_cobox to the last added preset
+                    self.ui.log_cobox.setCurrentIndex(0)
+                    # set the item to new added item
                     last_preset_added = self.ui.preset_cobox.count() - 1
                     self.ui.preset_cobox.setCurrentIndex(last_preset_added)
 
