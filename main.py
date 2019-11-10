@@ -40,8 +40,9 @@ class MyApp(QtWidgets.QWidget):
 
         # set btn icon
         # https://icons8.com/icon/46514/eraser
-        self.ui.erase_btn.setIcon(QIcon("icons/eraser_on.png"))
-        self.ui.x_btn.setIcon(QIcon("icons/delete_on.png"))
+        self.ui.erase_btn.setIcon(QIcon("icons/eraser.png"))
+        # https: // www.iconfinder.com / icons / 48082 / delete_icon
+        self.ui.x_btn.setIcon(QIcon("icons/delete.ico"))
         # Icon Farm-fresh made by FatCow Web Hosting from www.iconfinder.com
         # https://www.iconfinder.com/icons/36060/add_folder_icon
         self.ui.addfolder_btn.setIcon(QIcon("icons/add_folder.png"))
@@ -59,7 +60,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.order_LE.setValidator(onlyInt)
         self.ui.delay_LE.setValidator(onlyInt)
 
-        # call the all the method(s)
+        # call method(s)
         self.hide_unhide_col()
         self.btn_handler()
         self.add_item_to_cobox_mth("userinput.pset")
@@ -91,6 +92,7 @@ class MyApp(QtWidgets.QWidget):
         self.ui.log_cobox.currentIndexChanged.connect(self.get_preset_txt_from_pset_file_mth)
         # call icon btn mth
         self.ui.erase_btn.clicked.connect(lambda set_lst: self.set_fields_mth("erase"))
+        self.ui.erase_btn.installEventFilter(self)
         self.ui.x_btn.clicked.connect(self.del_preset_mth)
         self.ui.x_btn.installEventFilter(self)
         # call preview_mth for any user input
@@ -123,16 +125,30 @@ class MyApp(QtWidgets.QWidget):
 
         return [nameLE, serialLE, extLE, orderLE, fansubLE, delayLE, langCobox]
 
-    def eventFilter(self, a0: 'QObject', a1: 'QEvent') -> bool:
-        # 10 mean the mouse Hover the btn and 3 mean the btn is released
-        if a1.type() in (10, 3) and self.ui.preset_cobox.currentIndex():
-            self.ui.x_btn.setIconSize(QSize(20, 20))
+    def eventFilter(self, btn_obj: 'QObject', event: 'QEvent') -> bool:
+        # get the btn name
+        btn_name = btn_obj.objectName()
+        btn = getattr(self.ui, btn_name)
+        # see which btn I have to set
+        if btn_name == "x_btn":
+            user_typedtxt_or_selectpreset = self.ui.preset_cobox.currentIndex()
+        else:
+            user_typedtxt_or_selectpreset = len("".join(self.get_fields_txt_mth()))
+
+        # set the icons state to the btn
+        #################################
+        # 10 mean the mouse Hover the btn, and 3 mean the btn is released
+        if event.type() in (10, 3) and user_typedtxt_or_selectpreset:
+            btn.setIconSize(QSize(24, 24))
+            btn.setStyleSheet('QPushButton {background-color: #A3C1DA; border:  none}')
         # 11 mean the mouse Leaved the btn
-        elif a1.type() == 11:
-            self.ui.x_btn.setIconSize(QSize(16, 16))
+        elif event.type() == 11:
+            btn.setIconSize(QSize(20, 20))
+            btn.setStyleSheet('')
         # 2 mean the btn is clicked
-        elif a1.type() == 2 and self.ui.preset_cobox.currentIndex():
-            self.ui.x_btn.setIconSize(QSize(14, 14))
+        elif event.type() == 2 and user_typedtxt_or_selectpreset:
+            btn.setIconSize(QSize(16, 16))
+            btn.setStyleSheet('QPushButton {background-color: white;}')
 
         return False
 
@@ -309,6 +325,8 @@ class MyApp(QtWidgets.QWidget):
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
             self.ui.erase_btn.setEnabled(False)
+            self.ui.erase_btn.setIconSize(QSize(20, 20))
+            self.ui.erase_btn.setStyleSheet('')
         elif total_row > 0:
             self.ui.rename_btn.setEnabled(True)
             self.ui.addpreset_btn.setEnabled(True)
@@ -457,6 +475,7 @@ class MyApp(QtWidgets.QWidget):
             default_name = user_fildes_txt_lst[0] if len(user_fildes_txt_lst[0]) != 0 else "Preset " + full_date.strftime(
                 "%d-%m-%y_%H-%M")
         else:
+            # TODO: take the name_LE if no txt then take the name of the first name in the Qtable
             # I will allways create preset name by the date for the history.pset names
             default_name = "Preset " + full_date.strftime("%d-%m-%y_%H-%M")
 
@@ -550,12 +569,15 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.x_btn.setEnabled(True)
             else:
                 self.ui.x_btn.setEnabled(False)
+                self.ui.x_btn.setIconSize(QSize(20, 20))
+                self.ui.x_btn.setStyleSheet('')
                 set_lst = "erase"
 
             # set the preset txt to the fields
             self.set_fields_mth(set_lst)
 
     def del_preset_mth(self):
+        # TODO: maybe add warning dialog
         index = self.ui.preset_cobox.currentIndex()
         if index:
             self.ui.preset_cobox.removeItem(index)
