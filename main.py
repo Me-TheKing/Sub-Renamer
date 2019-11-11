@@ -1,12 +1,34 @@
+import ast
+import datetime
 import os
 import sys
 import time
+import traceback
+
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QFileInfo, Qt
-from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QAbstractItemView
+from PyQt5.QtCore import QFileInfo, Qt, QSize
+from PyQt5.QtGui import QIntValidator, QIcon
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox, QStyle
 
 from UI.maingui import Ui_Form  # importing our generated file
+
+
+def msgbox_dailog_func(msginfo_lst):
+    msg = QMessageBox()
+    msg.setIcon(msginfo_lst[0])
+
+    msg.setWindowTitle(msginfo_lst[1])
+    msg.setText(msginfo_lst[2])
+    msg.setInformativeText(msginfo_lst[3])
+    msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+    msg.exec_()
+
+
+def del_line_in_pset_file_func(pset_lst, pset_file, index=0):
+    del pset_lst[index]  # delete the first line
+    pset_file.seek(0)  # start from the first line
+    pset_file.truncate()  # clear the file
+    pset_file.writelines(pset_lst)  # add the rest of the lines to the file from the top
 
 
 class MyApp(QtWidgets.QWidget):
@@ -16,9 +38,21 @@ class MyApp(QtWidgets.QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
+        # set btn icon
+        # https://icons8.com/icon/46514/eraser
+        self.ui.erase_btn.setIcon(QIcon("icons/eraser.png"))
+        # https: // www.iconfinder.com / icons / 48082 / delete_icon
+        self.ui.x_btn.setIcon(QIcon("icons/delete.ico"))
+        # Icon Farm-fresh made by FatCow Web Hosting from www.iconfinder.com
+        # https://www.iconfinder.com/icons/36060/add_folder_icon
+        self.ui.addfolder_btn.setIcon(QIcon("icons/add_folder.png"))
+        # https://www.iconfinder.com/icons/36242/add_page_icon
+        self.ui.addfile_btn.setIcon(QIcon("icons/add_file.png"))
+
         # set Some Var
         self.original_name_lst = []
         self.new_name_lst = []
+        self.tmp_path = ""
 
         # set serial_LE, Order_LE, and delay_LE to eccept only Integer numbers
         onlyInt = QIntValidator()
@@ -26,9 +60,11 @@ class MyApp(QtWidgets.QWidget):
         self.ui.order_LE.setValidator(onlyInt)
         self.ui.delay_LE.setValidator(onlyInt)
 
-        # call the all the method(s)
+        # call method(s)
         self.hide_unhide_col()
         self.btn_handler()
+        self.add_item_to_cobox_mth("userinput.pset")
+        self.add_item_to_cobox_mth("history.pset")
 
         # setup table widget and Column(s)
         self.ui.tableWidget.setColumnCount(4)
@@ -42,13 +78,23 @@ class MyApp(QtWidgets.QWidget):
         self.ui.rename_btn.setEnabled(False)
         self.ui.unrename_btn.setEnabled(False)
         self.ui.clear_btn.setEnabled(False)
+        self.ui.erase_btn.setEnabled(False)
+        self.ui.x_btn.setEnabled(False)
 
     def btn_handler(self):
-        self.ui.addfile_btn.clicked.connect(self.addfile_mth)
-        self.ui.addfolder_btn.clicked.connect(self.addfile_mth)
+        self.ui.addfile_btn.clicked.connect(self.add_file_or_filder_btn_mth)
+        self.ui.addfolder_btn.clicked.connect(self.add_file_or_filder_btn_mth)
+        self.ui.addpreset_btn.clicked.connect(lambda file_name: self.add_preset_to_pset_file_mth("userinput.pset"))
         self.ui.clear_btn.clicked.connect(self.clear_mth)
         self.ui.rename_btn.clicked.connect(self.rename_mth)
         self.ui.unrename_btn.clicked.connect(self.unrename_mth)
+        self.ui.preset_cobox.currentIndexChanged.connect(self.get_preset_txt_from_pset_file_mth)
+        self.ui.log_cobox.currentIndexChanged.connect(self.get_preset_txt_from_pset_file_mth)
+        # call icon btn mth
+        self.ui.erase_btn.clicked.connect(lambda set_lst: self.set_fields_mth("erase"))
+        self.ui.erase_btn.installEventFilter(self)
+        self.ui.x_btn.clicked.connect(self.del_preset_mth)
+        self.ui.x_btn.installEventFilter(self)
         # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
@@ -64,11 +110,11 @@ class MyApp(QtWidgets.QWidget):
         self.ui.tableWidget.itemChanged.connect(self.reset_sort)
         # add a custom ContextMenu to the qTableWidget
         self.ui.tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
+        self.ui.tableWidget.customContextMenuRequested.connect(self.context_menu_mth)
         # call the sort column if the user click the column header
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
 
-    def userinput_mth(self):
+    def get_fields_txt_mth(self):
         nameLE = self.ui.name_LE.text()
         serialLE = self.ui.serial_LE.text()
         extLE = self.ui.ext_LE.text()
@@ -79,35 +125,73 @@ class MyApp(QtWidgets.QWidget):
 
         return [nameLE, serialLE, extLE, orderLE, fansubLE, delayLE, langCobox]
 
-    def addfile_mth(self):
+    def eventFilter(self, btn_obj: 'QObject', event: 'QEvent') -> bool:
+        # get the btn name
+        btn_name = btn_obj.objectName()
+        btn = getattr(self.ui, btn_name)
+        # see which btn I have to set
+        if btn_name == "x_btn":
+            user_typedtxt_or_selectpreset = self.ui.preset_cobox.currentIndex()
+        else:
+            user_typedtxt_or_selectpreset = len("".join(self.get_fields_txt_mth()))
+
+        # set the icons state to the btn
+        #################################
+        # 10 mean the mouse Hover the btn, and 3 mean the btn is released
+        if event.type() in (10, 3) and user_typedtxt_or_selectpreset:
+            btn.setIconSize(QSize(24, 24))
+            btn.setStyleSheet('QPushButton {background-color: #A3C1DA; border:  none}')
+        # 11 mean the mouse Leaved the btn
+        elif event.type() == 11:
+            btn.setIconSize(QSize(20, 20))
+            btn.setStyleSheet('')
+        # 2 mean the btn is clicked
+        elif event.type() == 2 and user_typedtxt_or_selectpreset:
+            btn.setIconSize(QSize(16, 16))
+            btn.setStyleSheet('QPushButton {background-color: white;}')
+
+        return False
+
+    def add_file_or_filder_btn_mth(self):
+        # TODO: Add files or folders by Drag&Drop
         # read the btn name
         btn_name = self.sender().text()
 
         # check the name of the btn that the user clicked, then save the file(s) name in a list
         if btn_name == "Add File(s)":
-            fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", "C:\\Users\\H.Ali\\Desktop\\Rename test",
+            # TODO: move the option in new var
+            #  I will make a var in the __ini__ def that contain the option file exe
+            fileNames, _ = QFileDialog.getOpenFileNames(self, "Get File(s)", self.tmp_path,
                                                         "All Filles (*);; Video Filles (*.mkv, *.mp4, *.avi, *.ts, *.m4v)")
         else:
-            folder_name = QFileDialog.getExistingDirectory(self, "Add File(s) from Folder")
+            folder_name = QFileDialog.getExistingDirectory(self, "Select Folder", self.tmp_path)
             # see if the user select a folfe or not
             if folder_name:
                 os.chdir(folder_name)
-                my_current_dic = os.getcwd()
-                # the filter is easy but give me a an object
-                # so I will use list comprehension version for fast check to see if the folder is empty or not
-                # fileNames = filter(os.path.isfile, os.listdir(my_current_dic))
-                fileNames = [f for f in os.listdir(my_current_dic) if os.path.isfile(f)]
+                my_current_dir = os.getcwd()
 
                 # see if the folder is empty or not
-                if not fileNames:
-                    print("The Folder is Empty or has only Folder(s)!!")
+                if len(os.listdir(folder_name)) == 0:
+                    msginfo_lst = [QMessageBox.Warning, "Empty Folder Warning",
+                                   "The Folder is Empty!!",
+                                   "No File Or Folder will be added."]
+                    msgbox_dailog_func(msginfo_lst)
+
+                    # if the user cancel the select dialog I have to asign False
+                    # or the fileNames will be undefined and the program will crash
+                    fileNames = False
+                else:
+                    # make the name(s) in fileNames list look the same as the format from the getOpenFileNames
+                    cwdpath = my_current_dir.replace("\\", "/")
+                    fileNames = []
+                    for f_name in os.listdir(my_current_dir):
+                        fileNames.append(f"{cwdpath}/{f_name}")
             else:
-                # if the user cacel the select dialog I have to asign False
+                # if the user cancel the select dialog I have to asign False
                 # or the fileNames will be undefined and the program will crash
                 fileNames = False
 
         # start the adding name(s) to the table
-        duplicate = False
         if fileNames:
             # enable the clear_btn
             self.ui.clear_btn.setEnabled(True)
@@ -116,18 +200,31 @@ class MyApp(QtWidgets.QWidget):
             for name in fileNames:
 
                 # check if the file has added before or not
+                duplicate = False
                 if self.ui.tableWidget.rowCount():
                     for row in range(self.ui.tableWidget.rowCount()):
                         if name == self.ui.tableWidget.item(row, 3).text():
                             duplicate = True
-                            print("you olready have this file in your list")
+                            msginfo_lst = [QMessageBox.Warning, "Duplicate Warning",
+                                           f"The {QFileInfo(name).fileName()} is in your list!!",
+                                           f"{QFileInfo(name).fileName()} will not be added to your list."]
+                            msgbox_dailog_func(msginfo_lst)
                             break
 
                 # adding the name to the table if it not there before
                 if not duplicate:
-                    modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
+
+                    # set the 3 var for each column. the name, date, and type
                     fileName = QFileInfo(name).fileName()
-                    ext_type = QFileInfo(name).suffix()
+                    modificationTime = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(os.path.getmtime(name)))
+                    # see if the name is folder or file
+                    if os.path.isfile(name):
+                        ext_type = QFileInfo(name).suffix()
+                        # if the file has no ext then the type by default is 'File'
+                        if not ext_type:
+                            ext_type = "File"
+                    else:
+                        ext_type = "Folder"
 
                     # setup table widget Row(s)
                     row_position = self.ui.tableWidget.rowCount()
@@ -141,13 +238,14 @@ class MyApp(QtWidgets.QWidget):
                     self.ui.tableWidget.setItem(row_position, 3, QTableWidgetItem(name))
 
                     # set some option(s) to the item
-                    for a_row in range(row_position + 1):
-                        for a_col in range(self.ui.tableWidget.columnCount()):
-                            if a_col == 0:
-                                self.ui.tableWidget.item(a_row, a_col).setCheckState(Qt.Checked)
+                    if ext_type == "Folder":
+                        self.ui.tableWidget.item(row_position, 0).setCheckState(Qt.Unchecked)
+                        self.ui.tableWidget.item(row_position, 0).setForeground(Qt.blue)
+                    else:
+                        self.ui.tableWidget.item(row_position, 0).setCheckState(Qt.Checked)
 
-                            self.ui.tableWidget.item(a_row, a_col).setFlags(
-                                Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                    self.ui.tableWidget.item(row_position, 0).setFlags(
+                        Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 
                     # resize the columns & rows to fit the text
                     self.ui.tableWidget.resizeColumnsToContents()
@@ -176,6 +274,9 @@ class MyApp(QtWidgets.QWidget):
                 # I can use the QFileInfo but I will leave it as alternative way
                 name = ".".join(a_row(index, 0).text().rsplit(".")[:-1])
                 ext = a_row(index, 0).text().split(".")[-1]
+                if not name:
+                    name = ext
+                    ext = ""
                 # add item(s) to the listview (part02) with the rename option(s)
                 if self.ui.name_LE.text():
                     name = self.ui.name_LE.text()
@@ -194,13 +295,22 @@ class MyApp(QtWidgets.QWidget):
                     name = f"{name}.{self.ui.order_LE.text()}.{self.ui.fansub_LE.text()}"
                 elif self.ui.order_LE.text():
                     name = f"{name}.{self.ui.order_LE.text()}"
+
                 # final step to add the name to the listview
-                item = QtGui.QStandardItem(f"{name}.{ext}")
+                if ext:
+                    item = QtGui.QStandardItem(f"{name}.{ext}")
+                else:
+                    item = QtGui.QStandardItem(f"{name}{ext}")
+
+                # check if this name is duplicated or not
+                # TODO: if the name is duplicated but it's from differnet path
+                #  then just change the color to skyblue or green
                 if item.text() not in test_names:
                     test_names.append(item.text())
                 else:
                     item.setBackground(Qt.red)
                     item.setForeground(Qt.white)
+
                 model.appendRow(item)
             else:
                 # add item(s) to the listview (part02) don't rename
@@ -209,15 +319,22 @@ class MyApp(QtWidgets.QWidget):
                 model.appendRow(item)
                 unchecked += 1
 
-        # this code is just to enable the addpreset_btn& rename_btn
+        # this code is just to enable the addpreset_btn & rename_btn
         # first join the string from the return list then get the length
-        userfield_len = len("".join(self.userinput_mth()))
+        userfield_len = len("".join(self.get_fields_txt_mth()))
         if userfield_len == 0 or unchecked == total_row:
             self.ui.rename_btn.setEnabled(False)
             self.ui.addpreset_btn.setEnabled(False)
+            self.ui.erase_btn.setEnabled(False)
+            self.ui.erase_btn.setIconSize(QSize(20, 20))
+            self.ui.erase_btn.setStyleSheet('')
         elif total_row > 0:
             self.ui.rename_btn.setEnabled(True)
             self.ui.addpreset_btn.setEnabled(True)
+
+        # enable only the erase_btn if the user input anything in any field
+        if userfield_len > 0:
+            self.ui.erase_btn.setEnabled(True)
 
         # to make sur the row(s) and column(s) size same as the contents
         self.ui.tableWidget.resizeColumnsToContents()
@@ -229,40 +346,50 @@ class MyApp(QtWidgets.QWidget):
         a_row = self.ui.tableWidget.item
 
         # check if the new names are not duplicated before the rename
-        #####################################################################
-        ##### note i will make the cell background red for these names in preview_mth #####
-        #####################################################################
         test_names = []
+        duplicated = False
         for index in range(total_rows):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
                 listview_name = model.item(index).text()
+                # TODO: test a different way to check if there is a duplicated name(s)
+                # print(model.item(index).backgroun())
                 if listview_name not in test_names:
                     test_names.append(listview_name)
                 else:
-                    print("you have duplicted names!! please check yuor input.")
+                    msginfo_lst = [QMessageBox.Warning, "Duplicate Warning",
+                                   "You Have One Or More Duplicated Name!!",
+                                   "Please Check Your Name(s) List, and Try Again."]
+                    msgbox_dailog_func(msginfo_lst)
+                    duplicated = True
                     break
 
-        for index in range(total_rows):
-            if a_row(index, 0).checkState() == QtCore.Qt.Checked:
-                # 0 is the 'Name' column
-                original_name = self.ui.tableWidget.item(index, 0).text()
-                new_name = model.item(index).text()
-                # num 3 is the full name column that have the full pathname
-                full_name = self.ui.tableWidget.item(index, 3).text()
-                path = QFileInfo(full_name).path().replace("/", "\\")
-                # chang to the path dir and then rename
-                os.chdir(path)
-                os.rename(original_name, new_name)
+        if not duplicated:
+            for index in range(total_rows):
+                if a_row(index, 0).checkState() == QtCore.Qt.Checked:
+                    # 0 is the 'Name' column
+                    original_name = self.ui.tableWidget.item(index, 0).text()
+                    new_name = model.item(index).text()
+                    # num 3 is the full name column that have the full pathname
+                    full_name = self.ui.tableWidget.item(index, 3).text()
+                    path = QFileInfo(full_name).path().replace("/", "\\")
+                    # chang to the path dir and then rename
+                    os.chdir(path)
+                    os.rename(original_name, new_name)
 
-                # add the original_name and the new_name to two list so i can use them in unrename_mth
-                self.original_name_lst.append(original_name)
-                self.new_name_lst.append(new_name)
+                    # add the original_name and the new_name to two list so i can use them in unrename_mth
+                    self.original_name_lst.append(original_name)
+                    self.new_name_lst.append(new_name)
 
-                # to disable the rename_btn and then enable the unrename_btn
-                self.ui.rename_btn.setEnabled(False)
-                self.ui.unrename_btn.setEnabled(True)
-            else:
-                print("I have to disable the Rename btn !!!!!????")
+                    # to disable the rename_btn and then enable the unrename_btn
+                    self.ui.rename_btn.setEnabled(False)
+                    self.ui.unrename_btn.setEnabled(True)
+
+                    # save the userinput in history.pset file
+                    self.add_preset_to_pset_file_mth("history.pset")
+
+                    # TODO: see if you want this else or not????
+                else:
+                    print("I have to disable the Rename btn !!!!!????")
 
     def unrename_mth(self):
         for i in range(len(self.original_name_lst)):
@@ -287,17 +414,29 @@ class MyApp(QtWidgets.QWidget):
         self.ui.listView.setModel(model)
         model.removeRows(0, model.rowCount())
 
-        # clear all the user input(s)
-        self.ui.name_LE.clear()
-        self.ui.serial_LE.clear()
-        self.ui.ext_LE.clear()
-        self.ui.order_LE.clear()
-        self.ui.fansub_LE.clear()
-        self.ui.delay_LE.clear()
-        self.ui.lang_cobox.setCurrentIndex(0)
+        # to clear all the input fields
+        self.set_fields_mth("erase")
 
         # disable the clear_btn
         self.ui.clear_btn.setEnabled(False)
+
+    def set_fields_mth(self, set_lst):
+        # make 7 empty space by " "*6, then split them by " "
+        if set_lst == "erase":
+            set_lst = (" " * 6).split(" ")
+
+            # set the cobox to there default value
+            self.ui.preset_cobox.setCurrentIndex(0)
+            self.ui.log_cobox.setCurrentIndex(0)
+
+        # set the preset
+        self.ui.name_LE.setText(set_lst[0])
+        self.ui.serial_LE.setText(set_lst[1])
+        self.ui.ext_LE.setText(set_lst[2])
+        self.ui.order_LE.setText(set_lst[3])
+        self.ui.fansub_LE.setText(set_lst[4])
+        self.ui.delay_LE.setText(set_lst[5])
+        self.ui.lang_cobox.setCurrentText(set_lst[6])
 
     def hide_unhide_col(self):
 
@@ -326,11 +465,138 @@ class MyApp(QtWidgets.QWidget):
 
         self.preview_mth()
 
-    def addpreset(self):
-        # add the 7 var in a txt file or something like it
-        pass
+    def add_preset_to_pset_file_mth(self, file_name):
+        # call the get_fields_txt_mth to collecate the user input information
+        user_fildes_txt_lst = self.get_fields_txt_mth()
 
-    def on_customContextMenuRequested(self, pos):
+        # the full date
+        full_date = datetime.datetime.now()
+        formated_date = full_date.strftime("%d-%m-%y_%H-%M")
+        # if there is no text in the name_LE I wll creat a default name by the date
+        if file_name == "userinput.pset":
+            default_name = user_fildes_txt_lst[0] if len(user_fildes_txt_lst[0]) != 0 else "Preset " + formated_date
+        else:
+            # TODO: take the name_LE if no txt then take the name of the first name in the Qtable
+            # I will always create preset name by the date for the history.pset names
+            default_name = "Preset " + formated_date
+
+        # write the userinput information in the userinput.pset file
+        try:
+            with open(f"{self.tmp_path}{file_name}", "r+") as preset:
+                pset_lst = preset.readlines()
+                # set the preset limit to 10 preset only
+                limit_reach = False
+                if len(pset_lst) < 10:
+                    # if the user want to save the preset a QDailoginput will ask him for the name
+                    if file_name == "userinput.pset":
+                        preset_name = self.get_preset_name_dialog(default_name)
+                        if preset_name:
+                            preset_dict = {"Preset Name": preset_name, "Preset info": user_fildes_txt_lst}
+                    else:
+                        preset_dict = {"Preset Name": default_name, "Preset info": user_fildes_txt_lst}
+
+                    # this will rise error if the above IF didn't defined the preset_dict
+                    preset.write(str(preset_dict) + "\n")
+                else:
+                    # update history.pset by deleting the first preset and shift all the lines up then add the new preset
+                    if file_name == "history.pset":
+                        # delete the first line
+                        del_line_in_pset_file_func(pset_lst, preset)
+                        # insert the new line in the bottom
+                        preset_dict = {"Preset Name": default_name, "Preset info": user_fildes_txt_lst}
+                        preset.write(str(preset_dict) + "\n")
+                    else:
+                        # show msg wrning that the user reach the preset limits and he/she must delete one or more preset
+                        msginfo_lst = [QMessageBox.Warning, "Add Preset Warning",
+                                       "Preset Limite Reach",
+                                       "you need to delete one or more from your Preset(s) Droplist"]
+                        msgbox_dailog_func(msginfo_lst)
+                        limit_reach = True
+        except UnboundLocalError:
+            preset.close()
+        else:
+            if not limit_reach:
+                self.add_item_to_cobox_mth(file_name)
+
+                # set the selected item in the preset_cobox to the last added preset
+                if file_name == "userinput.pset":
+                    # set the log_cobox to default
+                    # before I set the selected item in the preset_cobox to the last added preset
+                    self.ui.log_cobox.setCurrentIndex(0)
+                    # set the item to new added item
+                    last_preset_added = self.ui.preset_cobox.count() - 1
+                    self.ui.preset_cobox.setCurrentIndex(last_preset_added)
+
+    def add_item_to_cobox_mth(self, file_name):
+        try:
+            # first know which combobox is called and save it's name in cobox_name var
+            cobox_name = self.ui.preset_cobox if file_name == "userinput.pset" else self.ui.log_cobox
+
+            # clear the combobox before add the new preset, from down to up
+            for i in range(cobox_name.count(), 0, -1):
+                cobox_name.removeItem(i)
+
+            # add preset name to the combobox
+            with open(f"{self.tmp_path}{file_name}", "r") as preset:
+                for i, line in enumerate(preset.readlines()):
+                    # the literal_eval() mth from ast is to convert back the text line from str to dict
+                    line = ast.literal_eval(line)
+                    cobox_name.addItem(line["Preset Name"])
+
+        except FileNotFoundError:
+            # only creat the file if it not exists
+            with open(f"{self.tmp_path}{file_name}", "x"):
+                pass
+
+    def get_preset_txt_from_pset_file_mth(self, index):
+        # get the name of the combobox from the sender mth
+        combobox_name = self.sender().objectName()
+        # set the file_name and rest the other cobox to it's default name
+        if combobox_name == "preset_cobox":
+            file_name = "userinput.pset"
+            if index:
+                self.ui.log_cobox.setCurrentIndex(0)
+        else:
+            file_name = "history.pset"
+            if index:
+                self.ui.preset_cobox.setCurrentIndex(0)
+
+        with open(f"{self.tmp_path}{file_name}", "r") as preset:
+            # read the preset file and remove the newline char '\n'
+            preset_lst = preset.read().splitlines()
+            line = preset_lst[index - 1]
+            # the literal_eval() mth from ast is to convert back the text line from str to dict
+            line = ast.literal_eval(line)
+            # see if the user select the default name or not
+            if index:
+                set_lst = line["Preset info"]
+                if combobox_name == "preset_cobox":
+                    self.ui.x_btn.setEnabled(True)
+            else:
+                self.ui.x_btn.setEnabled(False)
+                self.ui.x_btn.setIconSize(QSize(20, 20))
+                self.ui.x_btn.setStyleSheet('')
+                set_lst = "erase"
+
+            # set the preset txt to the fields
+            self.set_fields_mth(set_lst)
+
+    def del_preset_mth(self):
+        # TODO: maybe add warning dialog
+        index = self.ui.preset_cobox.currentIndex()
+        if index:
+            self.ui.preset_cobox.removeItem(index)
+            with open("userinput.pset", "r+") as pset_file:
+                pset_lst = pset_file.readlines()
+                del_line_in_pset_file_func(pset_lst, pset_file, index - 1)
+
+            # set the fields to the item above the deleted item
+            self.ui.preset_cobox.setCurrentIndex(index - 1)
+
+    def context_menu_mth(self, pos):
+        # TODO: add two contextmenu to select all the rows or unselect all
+        #  and maybe select folder name only or select file name only
+        #  and see if I can make select files by there exe
         # if there is no table return and don't show the contextMenu
         it = self.ui.tableWidget.itemAt(pos)
         if it is None: return
@@ -346,15 +612,17 @@ class MyApp(QtWidgets.QWidget):
         row = self.ui.tableWidget
         cell = self.ui.tableWidget.item
 
+        # TODO: maybe add warning msgbox before the delete confirm???
         if action == delete_selected_action:
-            for index in reversed(range(total_rows)):
-                if cell(index, 0).checkState() == QtCore.Qt.Checked:
-                    row.removeRow(index)
+            check_state = QtCore.Qt.Checked
+        elif action == delete_unselected_action:
+            check_state = QtCore.Qt.Unchecked
+        else:
+            check_state = None
 
-        if action == delete_unselected_action:
-            for index in reversed(range(total_rows)):
-                if cell(index, 0).checkState() != QtCore.Qt.Checked:
-                    row.removeRow(index)
+        for index in reversed(range(total_rows)):
+            if cell(index, 0).checkState() == check_state:
+                row.removeRow(index)
 
         # update the listview after the delete
         self.preview_mth()
@@ -363,6 +631,15 @@ class MyApp(QtWidgets.QWidget):
         if self.ui.tableWidget.rowCount() == 0:
             self.ui.clear_btn.setEnabled(False)
 
+    def get_preset_name_dialog(self, preset_name):
+        text, okPressed = QInputDialog.getText(self, "Get Preset Name", "Your Preset name:", QLineEdit.Normal,
+                                               preset_name)
+        if okPressed and text != '':
+            return text
+        else:
+            return False
+
+    # TODO: maybe creat a def to move rows by keyboard??
     # def moveUP(self):
     #     currentRow = self.ui.listWidget.currentRow()
     #     currentItem = self.ui.listWidget.takeItem(currentRow)
