@@ -153,6 +153,7 @@ class MyApp(QtWidgets.QWidget):
         return False
 
     def add_file_or_filder_btn_mth(self):
+        # TODO: Add files or folders by Drag&Drop
         # read the btn name
         btn_name = self.sender().text()
 
@@ -414,7 +415,7 @@ class MyApp(QtWidgets.QWidget):
         model.removeRows(0, model.rowCount())
 
         # to clear all the input fields
-        self.set_fields_mth("erase")        
+        self.set_fields_mth("erase")
 
         # disable the clear_btn
         self.ui.clear_btn.setEnabled(False)
@@ -423,7 +424,7 @@ class MyApp(QtWidgets.QWidget):
         # make 7 empty space by " "*6, then split them by " "
         if set_lst == "erase":
             set_lst = (" " * 6).split(" ")
-            
+
             # set the cobox to there default value
             self.ui.preset_cobox.setCurrentIndex(0)
             self.ui.log_cobox.setCurrentIndex(0)
@@ -470,14 +471,14 @@ class MyApp(QtWidgets.QWidget):
 
         # the full date
         full_date = datetime.datetime.now()
+        formated_date = full_date.strftime("%d-%m-%y_%H-%M")
         # if there is no text in the name_LE I wll creat a default name by the date
         if file_name == "userinput.pset":
-            default_name = user_fildes_txt_lst[0] if len(user_fildes_txt_lst[0]) != 0 else "Preset " + full_date.strftime(
-                "%d-%m-%y_%H-%M")
+            default_name = user_fildes_txt_lst[0] if len(user_fildes_txt_lst[0]) != 0 else "Preset " + formated_date
         else:
             # TODO: take the name_LE if no txt then take the name of the first name in the Qtable
-            # I will allways create preset name by the date for the history.pset names
-            default_name = "Preset " + full_date.strftime("%d-%m-%y_%H-%M")
+            # I will always create preset name by the date for the history.pset names
+            default_name = "Preset " + formated_date
 
         # write the userinput information in the userinput.pset file
         try:
@@ -590,7 +591,7 @@ class MyApp(QtWidgets.QWidget):
                 del_line_in_pset_file_func(pset_lst, pset_file, index - 1)
 
             # set the fields to the item above the deleted item
-            self.ui.preset_cobox.setCurrentIndex(index-1)
+            self.ui.preset_cobox.setCurrentIndex(index - 1)
 
     def context_menu_mth(self, pos):
         # TODO: add two contextmenu to select all the rows or unselect all
@@ -618,7 +619,7 @@ class MyApp(QtWidgets.QWidget):
             check_state = QtCore.Qt.Unchecked
         else:
             check_state = None
-        
+
         for index in reversed(range(total_rows)):
             if cell(index, 0).checkState() == check_state:
                 row.removeRow(index)
