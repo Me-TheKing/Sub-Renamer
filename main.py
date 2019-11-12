@@ -276,7 +276,7 @@ class MyApp(QtWidgets.QWidget):
                 name = ".".join(a_row(index, 0).text().rsplit(".")[:-1])
                 ext = a_row(index, 0).text().split(".")[-1]
                 if not name:
-                    name = ext
+                    name = a_row(index, 0).text()
                     ext = ""
                 # add item(s) to the tableView (part02) with the rename option(s)
                 if self.ui.name_LE.text():
