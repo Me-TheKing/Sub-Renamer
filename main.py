@@ -257,11 +257,12 @@ class MyApp(QtWidgets.QWidget):
         a_row = self.ui.tableWidget.item
 
         ################################################
-        # the main adding to the listview is from here #
+        # the main adding to the tableView is from here #
         ################################################
-        # add item(s) to the listview (part01)
+        # add item(s) to the tableView (part01)
         model = QtGui.QStandardItemModel()
-        self.ui.listView.setModel(model)
+        model.setHorizontalHeaderLabels(["New Name(s)"])
+        self.ui.tableView.setModel(model)
 
         # some out of the loop option(s)
         if self.ui.serial_LE.text():
@@ -277,7 +278,7 @@ class MyApp(QtWidgets.QWidget):
                 if not name:
                     name = ext
                     ext = ""
-                # add item(s) to the listview (part02) with the rename option(s)
+                # add item(s) to the tableView (part02) with the rename option(s)
                 if self.ui.name_LE.text():
                     name = self.ui.name_LE.text()
                 if self.ui.ext_LE.text():
@@ -296,7 +297,7 @@ class MyApp(QtWidgets.QWidget):
                 elif self.ui.order_LE.text():
                     name = f"{name}.{self.ui.order_LE.text()}"
 
-                # final step to add the name to the listview
+                # final step to add the name to the tableView
                 if ext:
                     item = QtGui.QStandardItem(f"{name}.{ext}")
                 else:
@@ -313,7 +314,7 @@ class MyApp(QtWidgets.QWidget):
 
                 model.appendRow(item)
             else:
-                # add item(s) to the listview (part02) don't rename
+                # add item(s) to the tableView (part02) don't rename
                 item = QtGui.QStandardItem(a_row(index, 0).text())
                 item.setForeground(Qt.red)
                 model.appendRow(item)
@@ -339,9 +340,11 @@ class MyApp(QtWidgets.QWidget):
         # to make sur the row(s) and column(s) size same as the contents
         self.ui.tableWidget.resizeColumnsToContents()
         self.ui.tableWidget.resizeRowsToContents()
+        self.ui.tableView.resizeColumnsToContents()
+        self.ui.tableView.resizeRowsToContents()
 
     def rename_mth(self):
-        model = self.ui.listView.model()
+        model = self.ui.tableView.model()
         total_rows = self.ui.tableWidget.rowCount()
         a_row = self.ui.tableWidget.item
 
@@ -350,11 +353,11 @@ class MyApp(QtWidgets.QWidget):
         duplicated = False
         for index in range(total_rows):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
-                listview_name = model.item(index).text()
+                tableView_name = model.item(index).text()
                 # TODO: test a different way to check if there is a duplicated name(s)
                 # print(model.item(index).backgroun())
-                if listview_name not in test_names:
-                    test_names.append(listview_name)
+                if tableView_name not in test_names:
+                    test_names.append(tableView_name)
                 else:
                     msginfo_lst = [QMessageBox.Warning, "Duplicate Warning",
                                    "You Have One Or More Duplicated Name!!",
@@ -409,9 +412,9 @@ class MyApp(QtWidgets.QWidget):
         for index in reversed(range(rows)):
             self.ui.tableWidget.removeRow(index)
 
-        # clear all the item(s) in listview
+        # clear all the item(s) in tableView
         model = QtGui.QStandardItemModel()
-        self.ui.listView.setModel(model)
+        self.ui.tableView.setModel(model)
         model.removeRows(0, model.rowCount())
 
         # to clear all the input fields
@@ -624,7 +627,7 @@ class MyApp(QtWidgets.QWidget):
             if cell(index, 0).checkState() == check_state:
                 row.removeRow(index)
 
-        # update the listview after the delete
+        # update the tableView after the delete
         self.preview_mth()
 
         # disable the clear_btn if there is no rows
