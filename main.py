@@ -68,7 +68,7 @@ class MyApp(QtWidgets.QWidget):
 
         # setup table widget and Column(s)
         self.ui.tableWidget.setColumnCount(4)
-        self.ui.tableWidget.setHorizontalHeaderLabels(["Name", "Date", "Type", "Full Name"])
+        self.ui.tableWidget.setHorizontalHeaderLabels(["Original Name(s)", "Date", "Type", "Full Name"])
         self.ui.tableWidget.setColumnHidden(1, True)
         self.ui.tableWidget.setColumnHidden(2, True)
         self.ui.tableWidget.setColumnHidden(3, True)

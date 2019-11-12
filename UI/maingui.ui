@@ -2,56 +2,80 @@
 <ui version="4.0">
  <class>Form</class>
  <widget class="QWidget" name="Form">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>650</width>
-    <height>690</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="3" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout">
+   <item row="0" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <widget class="QPushButton" name="addfile_btn">
+       <property name="text">
+        <string>Add File(s)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="addfolder_btn">
+       <property name="text">
+        <string>Add Folder</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QLabel" name="label_8">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
+        <widget class="QComboBox" name="preset_cobox">
+         <property name="maxVisibleItems">
+          <number>11</number>
          </property>
-         <property name="text">
-          <string>Original Name(s):</string>
-         </property>
+         <item>
+          <property name="text">
+           <string>Preset(s)</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="date_chbox">
-         <property name="text">
-          <string>Date</string>
+        <widget class="QPushButton" name="x_btn">
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="type_chbox">
+         <property name="toolTip">
+          <string>Delete the seleceted preset.</string>
+         </property>
          <property name="text">
-          <string>Type</string>
+          <string/>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="QTableWidget" name="tableWidget">
-       <property name="alternatingRowColors">
-        <bool>true</bool>
+      <widget class="QComboBox" name="log_cobox">
+       <property name="maxVisibleItems">
+        <number>11</number>
        </property>
+       <item>
+        <property name="text">
+         <string>Log History</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -112,31 +136,6 @@
        </property>
        <property name="placeholderText">
         <string>mkv,exe</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="2">
-      <widget class="QPushButton" name="clear_btn">
-       <property name="text">
-        <string>Clear Lists</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QPushButton" name="rename_btn">
-       <property name="text">
-        <string>Rename</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="unrename_btn">
-       <property name="text">
-        <string>UnRename</string>
        </property>
       </widget>
      </item>
@@ -269,103 +268,85 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="1">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item row="3" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QLabel" name="label_9">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
+      <widget class="QCheckBox" name="checkBox">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
-       <property name="text">
-        <string>New Name(s):</string>
-       </property>
-       <property name="margin">
-        <number>2</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QListView" name="listView">
-       <property name="alternatingRowColors">
+       <property name="checked">
         <bool>true</bool>
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Original Name(s)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="date_chbox">
+       <property name="text">
+        <string>Date</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="type_chbox">
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>137</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
    </item>
-   <item row="0" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <widget class="QPushButton" name="addfile_btn">
+   <item row="4" column="0">
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QTableView" name="tableView"/>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QPushButton" name="rename_btn">
        <property name="text">
-        <string>Add File(s)</string>
+        <string>Rename</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="addfolder_btn">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="clear_btn">
        <property name="text">
-        <string>Add Folder</string>
+        <string>Clear Lists</string>
        </property>
       </widget>
      </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <property name="spacing">
-        <number>0</number>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="unrename_btn">
+       <property name="text">
+        <string>UnRename</string>
        </property>
-       <item>
-        <widget class="QComboBox" name="preset_cobox">
-         <property name="maxVisibleItems">
-          <number>11</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>Preset(s)</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="x_btn">
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Delete the seleceted preset.</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QComboBox" name="log_cobox">
-       <property name="maxVisibleItems">
-        <number>11</number>
-       </property>
-       <item>
-        <property name="text">
-         <string>Log History</string>
-        </property>
-       </item>
       </widget>
      </item>
     </layout>
