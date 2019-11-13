@@ -13,6 +13,11 @@ from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEd
 from UI.maingui import Ui_Form  # importing our generated file
 
 
+# TODO: 1- add btn to clear the ext in my GUI
+#  2- add icon to the form
+#  3- see if you can make the width of the 'New Name(s)' fit the hole table??
+#  FIXME: see what happen to the arrang rows in the Qtablewidget??
+
 def msgbox_dailog_func(msginfo_lst):
     msg = QMessageBox()
     msg.setIcon(msginfo_lst[0])
@@ -113,17 +118,6 @@ class MyApp(QtWidgets.QWidget):
         self.ui.tableWidget.customContextMenuRequested.connect(self.context_menu_mth)
         # call the sort column if the user click the column header
         self.ui.tableWidget.horizontalHeader().sortIndicatorChanged.connect(self.sort_col)
-
-    def get_fields_txt_mth(self):
-        nameLE = self.ui.name_LE.text()
-        serialLE = self.ui.serial_LE.text()
-        extLE = self.ui.ext_LE.text()
-        orderLE = self.ui.order_LE.text()
-        fansubLE = self.ui.fansub_LE.text()
-        delayLE = self.ui.delay_LE.text()
-        langCobox = self.ui.lang_cobox.currentText()
-
-        return [nameLE, serialLE, extLE, orderLE, fansubLE, delayLE, langCobox]
 
     def eventFilter(self, btn_obj: 'QObject', event: 'QEvent') -> bool:
         # get the btn name
@@ -355,7 +349,7 @@ class MyApp(QtWidgets.QWidget):
             if a_row(index, 0).checkState() == QtCore.Qt.Checked:
                 tableView_name = model.item(index).text()
                 # TODO: test a different way to check if there is a duplicated name(s)
-                # print(model.item(index).backgroun())
+                # print(model.item(index).background())
                 if tableView_name not in test_names:
                     test_names.append(tableView_name)
                 else:
@@ -369,23 +363,19 @@ class MyApp(QtWidgets.QWidget):
         if not duplicated:
             for index in range(total_rows):
                 if a_row(index, 0).checkState() == QtCore.Qt.Checked:
-                    # 0 is the 'Name' column
+                    # 0 is the 'Original Name(s)' column
                     original_name = self.ui.tableWidget.item(index, 0).text()
                     new_name = model.item(index).text()
-                    # num 3 is the full name column that have the full pathname
+                    # num 3 is the 'full name' column that have the full pathname
                     full_name = self.ui.tableWidget.item(index, 3).text()
                     path = QFileInfo(full_name).path().replace("/", "\\")
-                    # chang to the path dir and then rename
+                    # change to the path dir and then rename
                     os.chdir(path)
                     os.rename(original_name, new_name)
 
                     # add the original_name and the new_name to two list so i can use them in unrename_mth
                     self.original_name_lst.append(original_name)
                     self.new_name_lst.append(new_name)
-
-                    # to disable the rename_btn and then enable the unrename_btn
-                    self.ui.rename_btn.setEnabled(False)
-                    self.ui.unrename_btn.setEnabled(True)
 
                     # save the userinput in history.pset file
                     self.add_preset_to_pset_file_mth("history.pset")
@@ -422,6 +412,17 @@ class MyApp(QtWidgets.QWidget):
 
         # disable the clear_btn
         self.ui.clear_btn.setEnabled(False)
+
+    def get_fields_txt_mth(self):
+        nameLE = self.ui.name_LE.text()
+        serialLE = self.ui.serial_LE.text()
+        extLE = self.ui.ext_LE.text()
+        orderLE = self.ui.order_LE.text()
+        fansubLE = self.ui.fansub_LE.text()
+        delayLE = self.ui.delay_LE.text()
+        langCobox = self.ui.lang_cobox.currentText()
+
+        return [nameLE, serialLE, extLE, orderLE, fansubLE, delayLE, langCobox]
 
     def set_fields_mth(self, set_lst):
         # make 7 empty space by " "*6, then split them by " "
@@ -482,6 +483,7 @@ class MyApp(QtWidgets.QWidget):
             # TODO: take the name_LE if no txt then take the name of the first name in the Qtable
             # I will always create preset name by the date for the history.pset names
             default_name = "Preset " + formated_date
+            selected_name = self.ui.log_cobox.currentText()
 
         # write the userinput information in the userinput.pset file
         try:
@@ -509,7 +511,7 @@ class MyApp(QtWidgets.QWidget):
                         preset_dict = {"Preset Name": default_name, "Preset info": user_fildes_txt_lst}
                         preset.write(str(preset_dict) + "\n")
                     else:
-                        # show msg wrning that the user reach the preset limits and he/she must delete one or more preset
+                        # show msg warning that the user reach the preset limits and he/she must delete one or more preset
                         msginfo_lst = [QMessageBox.Warning, "Add Preset Warning",
                                        "Preset Limite Reach",
                                        "you need to delete one or more from your Preset(s) Droplist"]
@@ -519,6 +521,7 @@ class MyApp(QtWidgets.QWidget):
             preset.close()
         else:
             if not limit_reach:
+                current_fields_txt = self.get_fields_txt_mth()
                 self.add_item_to_cobox_mth(file_name)
 
                 # set the selected item in the preset_cobox to the last added preset
@@ -529,6 +532,16 @@ class MyApp(QtWidgets.QWidget):
                     # set the item to new added item
                     last_preset_added = self.ui.preset_cobox.count() - 1
                     self.ui.preset_cobox.setCurrentIndex(last_preset_added)
+
+                # set the selected item in the log_cobox to the selected preset before we add a preset to the file
+                if file_name == "history.pset":
+                    self.ui.log_cobox.setCurrentText(selected_name)
+                    if self.ui.log_cobox.currentIndex() == 0:
+                        self.set_fields_mth(current_fields_txt)
+
+                    # to disable the rename_btn and then enable the unrename_btn
+                    self.ui.rename_btn.setEnabled(False)
+                    self.ui.unrename_btn.setEnabled(True)
 
     def add_item_to_cobox_mth(self, file_name):
         try:
@@ -541,7 +554,7 @@ class MyApp(QtWidgets.QWidget):
 
             # add preset name to the combobox
             with open(f"{self.tmp_path}{file_name}", "r") as preset:
-                for i, line in enumerate(preset.readlines()):
+                for line in preset.readlines():
                     # the literal_eval() mth from ast is to convert back the text line from str to dict
                     line = ast.literal_eval(line)
                     cobox_name.addItem(line["Preset Name"])
