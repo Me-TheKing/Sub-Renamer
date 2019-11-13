@@ -8,11 +8,12 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from UI.CustomQTableClass import TableWidgetDragRows
 
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
+        Form.resize(1280, 720)
         self.gridLayout_2 = QtWidgets.QGridLayout(Form)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
@@ -68,6 +69,9 @@ class Ui_Form(object):
         self.ext_LE.setMaximumSize(QtCore.QSize(50, 16777215))
         self.ext_LE.setObjectName("ext_LE")
         self.horizontalLayout_2.addWidget(self.ext_LE)
+        self.no_ext_chbox = QtWidgets.QCheckBox(Form)
+        self.no_ext_chbox.setObjectName("no_ext_chbox")
+        self.horizontalLayout_2.addWidget(self.no_ext_chbox)
         self.gridLayout_2.addLayout(self.horizontalLayout_2, 1, 0, 1, 2)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -134,7 +138,7 @@ class Ui_Form(object):
         spacerItem = QtWidgets.QSpacerItem(137, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem)
         self.gridLayout_2.addLayout(self.horizontalLayout_3, 3, 0, 1, 2)
-        self.tableWidget = QtWidgets.QTableWidget(Form)
+        self.tableWidget = TableWidgetDragRows(Form)
         self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
@@ -177,6 +181,7 @@ class Ui_Form(object):
         self.serial_LE.setPlaceholderText(_translate("Form", "1or01..."))
         self.label_7.setText(_translate("Form", "Ext:"))
         self.ext_LE.setPlaceholderText(_translate("Form", "mkv,exe"))
+        self.no_ext_chbox.setText(_translate("Form", "No Ext."))
         self.label_3.setText(_translate("Form", "Order:"))
         self.order_LE.setPlaceholderText(_translate("Form", "01 ..."))
         self.label_2.setText(_translate("Form", "Fan-Sub Team:"))
