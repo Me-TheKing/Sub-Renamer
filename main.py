@@ -12,9 +12,6 @@ from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEd
 from UI.maingui import Ui_Form  # importing our generated file
 
 
-# TODO: 1- add btn to clear the ext in my GUI
-#  2- add icon to the form
-
 def msgbox_dailog_func(msginfo_lst):
     msg = QMessageBox()
     msg.setIcon(msginfo_lst[0])
@@ -85,17 +82,20 @@ class MyApp(QtWidgets.QWidget):
     def btn_handler(self):
         self.ui.addfile_btn.clicked.connect(self.add_file_or_filder_btn_mth)
         self.ui.addfolder_btn.clicked.connect(self.add_file_or_filder_btn_mth)
-        self.ui.addpreset_btn.clicked.connect(lambda file_name: self.add_preset_to_pset_file_mth("userinput.pset"))
-        self.ui.clear_btn.clicked.connect(self.clear_mth)
-        self.ui.rename_btn.clicked.connect(self.rename_mth)
-        self.ui.unrename_btn.clicked.connect(self.unrename_mth)
         self.ui.preset_cobox.currentIndexChanged.connect(self.get_preset_txt_from_pset_file_mth)
         self.ui.log_cobox.currentIndexChanged.connect(self.get_preset_txt_from_pset_file_mth)
+        self.ui.no_ext_chbox.clicked.connect(self.no_ext_mth)
+        self.ui.addpreset_btn.clicked.connect(lambda file_name: self.add_preset_to_pset_file_mth("userinput.pset"))
+        self.ui.rename_btn.clicked.connect(self.rename_mth)
+        self.ui.unrename_btn.clicked.connect(self.unrename_mth)
+        self.ui.clear_btn.clicked.connect(self.clear_mth)
+
         # call icon btn mth
-        self.ui.erase_btn.clicked.connect(lambda set_lst: self.set_fields_mth("erase"))
-        self.ui.erase_btn.installEventFilter(self)
         self.ui.x_btn.clicked.connect(self.del_preset_mth)
         self.ui.x_btn.installEventFilter(self)
+        self.ui.erase_btn.clicked.connect(lambda set_lst: self.set_fields_mth("erase"))
+        self.ui.erase_btn.installEventFilter(self)
+
         # call preview_mth for any user input
         self.ui.name_LE.textChanged.connect(self.preview_mth)
         self.ui.serial_LE.textChanged.connect(self.preview_mth)
@@ -287,10 +287,13 @@ class MyApp(QtWidgets.QWidget):
                     name = f"{name}.{self.ui.order_LE.text()}"
 
                 # final step to add the name to the tableView
-                if ext:
+                ext_le_state = self.ui.ext_LE.isEnabled()
+                if ext and ext_le_state:
                     item = QtGui.QStandardItem(f"{name}.{ext}")
-                else:
+                elif ext_le_state:
                     item = QtGui.QStandardItem(f"{name}{ext}")
+                else:
+                    item = QtGui.QStandardItem(name)
 
                 # check if this name is duplicated or not
                 # TODO: if the name is duplicated but it's from differnet path
@@ -406,6 +409,14 @@ class MyApp(QtWidgets.QWidget):
 
         # disable the clear_btn
         self.ui.clear_btn.setEnabled(False)
+
+    def no_ext_mth(self, event):
+        if event:
+            self.ui.ext_LE.setEnabled(False)
+        else:
+            self.ui.ext_LE.setEnabled(True)
+
+        self.preview_mth()
 
     def get_fields_txt_mth(self):
         nameLE = self.ui.name_LE.text()
