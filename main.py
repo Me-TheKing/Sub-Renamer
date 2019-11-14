@@ -637,15 +637,40 @@ class MyApp(QtWidgets.QWidget):
         if it is None: return
 
         # creat the contextMenu and add the action the popup the menu in the position of the mouse
-        menu = QtWidgets.QMenu()
-        delete_selected_action = menu.addAction("Delete Selected Name(s)")
-        delete_unselected_action = menu.addAction("Delete unSelected Name(s)")
-        action = menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
+        main_menu = QtWidgets.QMenu()
+        # select section menu
+        select_menu = main_menu.addMenu("Select")
+        select_all_act = select_menu.addAction("Select All")
+        select_files_act = select_menu.addAction("Select File(s) Only")
+        select_folder_act = select_menu.addAction("Select Folder(s) Only")
+        # delete section menu
+        del_ico = QIcon("icons/eraser.png")
+        delete_menu = main_menu.addMenu(del_ico, "Delete")
+        delete_selected_action = delete_menu.addAction("Delete Selected Name(s)")
+        delete_unselected_action = delete_menu.addAction("Delete unSelected Name(s)")
+        action = main_menu.exec_(self.ui.tableWidget.viewport().mapToGlobal(pos))
 
         # delete the row(s)
         total_rows = self.ui.tableWidget.rowCount()
         row = self.ui.tableWidget
         cell = self.ui.tableWidget.item
+
+        # select section action
+        if action == select_all_act:
+            for index in range(total_rows):
+                cell(index, 0).setCheckState(QtCore.Qt.Checked)
+        elif action == select_files_act:
+            for index in range(total_rows):
+                if cell(index, 2).text() != "Folder":
+                    cell(index, 0).setCheckState(QtCore.Qt.Checked)
+                else:
+                    cell(index, 0).setCheckState(QtCore.Qt.Unchecked)
+        elif action == select_folder_act:
+            for index in range(total_rows):
+                if cell(index, 2).text() == "Folder":
+                    cell(index, 0).setCheckState(QtCore.Qt.Checked)
+                else:
+                    cell(index, 0).setCheckState(QtCore.Qt.Unchecked)
 
         # TODO: maybe add warning msgbox before the delete confirm???
         if action == delete_selected_action:
