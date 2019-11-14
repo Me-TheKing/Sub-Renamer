@@ -3,20 +3,17 @@ import datetime
 import os
 import sys
 import time
-import traceback
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QFileInfo, Qt, QSize
 from PyQt5.QtGui import QIntValidator, QIcon
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox, QStyle
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QInputDialog, QLineEdit, QMessageBox
 
 from UI.maingui import Ui_Form  # importing our generated file
 
 
 # TODO: 1- add btn to clear the ext in my GUI
 #  2- add icon to the form
-#  3- see if you can make the width of the 'New Name(s)' fit the hole table??
-#  FIXME: see what happen to the arrang rows in the Qtablewidget??
 
 def msgbox_dailog_func(msginfo_lst):
     msg = QMessageBox()
@@ -66,7 +63,6 @@ class MyApp(QtWidgets.QWidget):
         self.ui.delay_LE.setValidator(onlyInt)
 
         # call method(s)
-        self.hide_unhide_col()
         self.btn_handler()
         self.add_item_to_cobox_mth("userinput.pset")
         self.add_item_to_cobox_mth("history.pset")
@@ -242,8 +238,7 @@ class MyApp(QtWidgets.QWidget):
                         Qt.ItemIsSelectable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 
                     # resize the columns & rows to fit the text
-                    self.ui.tableWidget.resizeColumnsToContents()
-                    self.ui.tableWidget.resizeRowsToContents()
+                    self.hide_unhide_col()
 
     def preview_mth(self):
         # the information  I need is the Total row(s) and the name of the file
@@ -332,9 +327,8 @@ class MyApp(QtWidgets.QWidget):
             self.ui.erase_btn.setEnabled(True)
 
         # to make sur the row(s) and column(s) size same as the contents
-        self.ui.tableWidget.resizeColumnsToContents()
-        self.ui.tableWidget.resizeRowsToContents()
-        self.ui.tableView.resizeColumnsToContents()
+        self.hide_unhide_col()
+        self.ui.tableView.horizontalHeader().setStretchLastSection(True)
         self.ui.tableView.resizeRowsToContents()
 
     def rename_mth(self):
@@ -455,6 +449,20 @@ class MyApp(QtWidgets.QWidget):
             self.ui.tableWidget.resizeColumnsToContents()
         else:
             self.ui.tableWidget.hideColumn(2)
+
+        # allways make the first column strech and the rest of the column resize to the contents
+        total_col_size = self.ui.tableWidget.width() - 4
+        date_size = self.ui.tableWidget.columnWidth(1)
+        type_size = self.ui.tableWidget.columnWidth(2)
+        originalname_size = total_col_size - date_size - type_size
+        self.ui.tableWidget.setColumnWidth(0, originalname_size)
+        self.ui.tableWidget.setColumnWidth(1, date_size)
+        self.ui.tableWidget.setColumnWidth(2, type_size)
+        # resize the rows to the contents
+        self.ui.tableWidget.resizeRowsToContents()
+
+    def resizeEvent(self, event):
+        self.hide_unhide_col()
 
     def sort_col(self):
         self.ui.tableWidget.setSortingEnabled(True)
